@@ -34,7 +34,20 @@
     </header>
 
     <main id="dashboard-content">
-      <section id="beranda-view" class="content-view active-view">
+     <section id="beranda-view" class="content-view active-view">
+	 <section id="referensi-view" class="content-view" style="display: none;">
+		<h2>Data Referensi (Reff) - Petugas BMN</h2>
+		<div class="table-actions">
+        <button class="btn btn-primary" onclick="openModal('referensi')"> + Input Petugas BMN</button>
+    </div>
+		<table id="tabel-referensi-bmn" class="data-table">
+        <thead>
+            <tr><th>No</th><th>Nama Petugas BMN</th><th>NIP / NIK</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="referensi-bmn-data-body">
+            </tbody>
+			</table>
+	</section>
         <h2>Beranda - Monitoring Barang</h2>
         <div class="filter-panel">
           <label>Nama Barang:</label>
@@ -81,6 +94,20 @@
       <h2 id="modal-title">Form Input</h2>
 
       <div id="modal-barang" class="modal-form" style="display: none;">
+		<div class="modal-content">
+		<span class="close-btn" onclick="closeModal()">&times;</span>
+		<h2 id="modal-title">Form Input</h2>
+
+			<div id="modal-barang" class="modal-form" style="display: none;">
+        </div>
+
+			<div id="modal-ruangan" class="modal-form" style="display: none;">
+        </div>
+
+			<div id="modal-referensi" class="modal-form" style="display: none;">
+        </div>
+
+		</div>
         <form id="form-barang-modal" onsubmit="saveDataBarang(event)">
           <label>Nama Barang:</label>
           <input type="text" id="form-nama-barang" required>

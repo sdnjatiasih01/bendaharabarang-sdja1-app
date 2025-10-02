@@ -55,7 +55,51 @@ function showView(viewId) {
     loadKondisiBarang();
   }
 }
+// ... (di bagian lain script.js)
 
+// Tambahkan Event Listener untuk tombol navigasi
+document.addEventListener('DOMContentLoaded', () => {
+    // Logika ini akan berjalan setelah seluruh HTML dimuat
+    const navButtons = document.querySelectorAll('#top-nav .nav-btn');
+    navButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            // Hapus kelas 'active' dari semua tombol
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Tambahkan kelas 'active' ke tombol yang baru diklik
+            event.target.classList.add('active');
+            
+            // Tampilkan view yang sesuai
+            const viewId = event.target.getAttribute('data-view');
+            showView(viewId);
+        });
+    });
+});
+
+// Pastikan fungsi showView() Anda sudah memuat data yang relevan
+function showView(viewId) {
+    // Sembunyikan semua view
+    document.querySelectorAll('.content-view').forEach(view => {
+        view.style.display = 'none';
+        view.classList.remove('active-view');
+    });
+
+    // Tampilkan view yang diminta
+    const targetView = document.getElementById(`${viewId}-view`);
+    if (targetView) {
+        targetView.style.display = 'block';
+        targetView.classList.add('active-view');
+    }
+
+    // Panggil fungsi pemuatan data di sini:
+    if (viewId === 'beranda') {
+        loadDataBarang();
+        loadKondisiBarang();
+    } else if (viewId === 'referensi') {
+        loadPenanggungJawabTable(); // Fungsi yang kita bahas sebelumnya
+    }
+    // ... tambahkan untuk 'identitas', 'ruangan', 'barang', dll.
+}
 // Load Data Barang
 function loadDataBarang() {
   const tableBody = document.getElementById("barang-data-body");
@@ -226,3 +270,7 @@ function editBarang(docId) {
     }
   });
 }
+</div>
+
+<script src="script.js"></script> </body>
+</html>
