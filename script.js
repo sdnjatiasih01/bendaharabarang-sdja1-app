@@ -10,7 +10,7 @@ const firebaseConfig = {
     storageBucket: "inventaris-sekolah-6aa45.appspot.com",
     messagingSenderId: "482992763821",
     appId: "1:482992763821:web:3476cb5bd7320d840c2724",
-    measurementId: "G-C51S4NNKXM"
+    measurementId: "G-C51S4NNKXM",
     // ... konfigurasi lainnya
 };
 
