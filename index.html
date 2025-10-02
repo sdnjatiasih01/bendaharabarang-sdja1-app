@@ -48,6 +48,25 @@
             </tbody>
 			</table>
 	</section>
+	
+		<section id="identitas-view" class="content-view" style="display: none;">
+		<h2>Data Identitas Aplikasi</h2>
+	</section>
+
+		<section id="ruangan-view" class="content-view" style="display: none;">
+		<h2>Data Ruangan</h2>
+		<div class="table-actions">
+        <button class="btn btn-primary" onclick="openModal('ruangan')"> + Input Data Ruangan</button>
+		</div>
+		<table id="tabel-ruangan" class="data-table">
+        <thead>
+            <tr><th>No</th><th>Nama Ruangan</th><th>Nama Gedung</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="ruangan-data-body">
+            </tbody>
+		</table>
+	</section>
+	
         <h2>Beranda - Monitoring Barang</h2>
         <div class="filter-panel">
           <label>Nama Barang:</label>

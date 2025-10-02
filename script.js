@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Pastikan fungsi showView() Anda sudah memuat data yang relevan
+// SCRIPT.JS: GANTI FUNGSI showView(viewId) YANG TERSISA DENGAN KODE INI
+
 function showView(viewId) {
     // Sembunyikan semua view
     document.querySelectorAll('.content-view').forEach(view => {
@@ -73,13 +75,22 @@ function showView(viewId) {
         targetView.classList.add('active-view');
     }
 
-    // Panggil fungsi pemuatan data di sini:
+    // Panggil fungsi pemuatan data sesuai viewId:
     if (viewId === 'beranda') {
         loadDataBarang();
         loadKondisiBarang();
-    } else if (viewId === 'referensi') {
-        loadPenanggungJawabTable(); // Fungsi yang kita bahas sebelumnya
+else if (viewId === 'referensi') {
+        loadPenanggungJawabTable(); 
+	// Fungsi yang kita bahas sebelumnya
+	} else if (viewId === 'ruangan') {
+        // Asumsi fungsi ini sudah Anda tambahkan di bagian CRUD
+        loadDataRuangan(); 
+    } else if (viewId === 'identitas') {
+        // Fungsi untuk memuat data identitas (Jika Anda punya form/tabelnya)
+        loadIdentitas();
     }
+	}
+	
     // ... tambahkan untuk 'identitas', 'ruangan', 'barang', dll.
 }
 // Load Data Barang
