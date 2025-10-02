@@ -4,16 +4,15 @@
 // Awal file script.js
 // Bagian 1: Konfigurasi Anda
 const firebaseConfig = {
-    apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8", // Isi dengan API Key Anda yang sebenarnya
+    apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
     authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
     projectId: "inventaris-sekolah-6aa45",
     storageBucket: "inventaris-sekolah-6aa45.appspot.com",
     messagingSenderId: "482992763821",
     appId: "1:482992763821:web:3476cb5bd7320d840c2724",
     measurementId: "G-C51S4NNKXM"
-    // ... konfigurasi lainnya
 };
-
+const app = firebase.initializeApp(firebaseConfig); 
 const auth = app.auth(); // <--- BARIS KRITIS INI HARUS ADA!
 const db = app.firestore(); // Baris ini juga penting
 
