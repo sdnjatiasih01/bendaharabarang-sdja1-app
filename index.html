@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Inventaris Ruangan</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+</head>
+<body>
+
+    <div id="login-container">
+        <h2>Login Aplikasi</h2>
+        <input type="text" id="login-email" placeholder="Email (admin@sekolah.edu)">
+        <input type="password" id="login-password" placeholder="Password (admin123)">
+        <button onclick="loginUser()">Login</button>
+        <p id="login-message" style="color: red;"></p>
+    </div>
+
+    <div id="dashboard-container" style="display: none;">
+        <header>
+            <h1>APLIKASI DAFTAR BARANG INVENTARIS RUANGAN</h1>
+            <button onclick="logoutUser()">Logout</button>
+        </header>
+        
+        <div id="main-content">
+            <nav id="sidebar">
+                <a href="#" class="nav-item active">Beranda</a>
+                <a href="#" class="nav-item" onclick="openForm('identitas')">Identitas</a>
+                <a href="#" class="nav-item" onclick="openForm('input_ruangan')">Input Data Ruangan</a>
+                <a href="#" class="nav-item" onclick="openForm('input_barang')">Input Data Barang</a>
+            </nav>
+
+            <main id="content-area">
+                <section id="beranda-view" class="view">
+                    <h2>Beranda Inventaris</h2>
+                    <div class="kriteria-barang">
+                        <label for="filter-barang">Kondisi Barang:</label>
+                        <select id="filter-barang">
+                            <option value="">Semua Barang</option>
+                            </select>
+                        <button onclick="loadKondisiBarang()">Tampilkan</button>
+                    </div>
+
+                    <div id="kondisi-barang-ringkasan" class="data-box">
+                        <p>JUMLAH GEDUNG: <span id="jumlah-gedung">0</span></p>
+                        <table>
+                            <thead>
+                                <tr><th>BAIK</th><th>RUSAK RINGAN</th><th>RUSAK BERAT</th><th>TOTAL</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="kondisi-baik">0</td>
+                                    <td id="kondisi-rr">0</td>
+                                    <td id="kondisi-rb">0</td>
+                                    <td id="kondisi-total">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Data Ruangan</h3>
+                    <div id="data-ruangan-list" class="data-list">
+                        </div>
+                </section>
+                
+                <section id="input_barang-view" class="view" style="display: none;">
+                    <h2>Input Data Barang</h2>
+                    <form id="form-barang" onsubmit="saveDataBarang(event)">
+                        <div class="form-row">
+                            <label>Nama Ruangan:</label>
+                            <select id="ruangan-select" required>
+                                </select>
+                        </div>
+                        <div class="form-row">
+                            <label>Nama Barang:</label>
+                            <input type="text" id="nama-barang" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Kondisi:</label>
+                            <select id="kondisi-barang" required>
+                                <option value="B">Baik</option>
+                                <option value="RR">Rusak Ringan</option>
+                                <option value="RB">Rusak Berat</option>
+                            </select>
+                        </div>
+                        <button type="submit">Save</button>
+                        <button type="reset">New</button>
+                    </form>
+                </section>
+                
+                </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

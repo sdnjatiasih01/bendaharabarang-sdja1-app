@@ -1,0 +1,156 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fa;
+}
+
+/* Login Page Styling */
+#login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+#login-container h2 {
+    text-align: center;
+    color: #007bff;
+}
+#login-container input, #login-container button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+#login-container button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+#login-container button:hover {
+    background-color: #0056b3;
+}
+
+/* Dashboard Styling */
+#dashboard-container {
+    background-color: #f4f7fa;
+    min-height: 100vh;
+}
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+header h1 {
+    margin: 0;
+    font-size: 20px;
+}
+header button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#main-content {
+    display: flex;
+}
+#sidebar {
+    width: 250px;
+    background-color: #343a40;
+    padding: 20px 0;
+    min-height: calc(100vh - 50px); /* Sesuaikan dengan tinggi header */
+}
+.nav-item {
+    display: block;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-left: 5px solid transparent;
+}
+.nav-item:hover, .nav-item.active {
+    background-color: #495057;
+    border-left: 5px solid #ffc107;
+}
+
+#content-area {
+    flex-grow: 1;
+    padding: 20px;
+}
+.view {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Dashboard Specific Styles */
+.kriteria-barang {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#kondisi-barang-ringkasan table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+#kondisi-barang-ringkasan th, #kondisi-barang-ringkasan td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+#kondisi-barang-ringkasan th {
+    background-color: #e9ecef;
+}
+
+.data-list div {
+    border: 1px solid #007bff;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #e7f0ff;
+}
+
+/* Form Styles */
+#form-barang .form-row {
+    margin-bottom: 15px;
+}
+#form-barang label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+#form-barang input, #form-barang select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+#form-barang button {
+    padding: 10px 15px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#form-barang button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+}
+#form-barang button[type="reset"] {
+    background-color: #ffc107;
+    color: #333;
+}
