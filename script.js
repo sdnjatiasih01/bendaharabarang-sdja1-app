@@ -40,21 +40,6 @@ function logoutUser() {
 }
 
 // View
-function showView(viewId) {
-  document.querySelectorAll('.content-view').forEach(view => {
-    view.style.display = 'none';
-    view.classList.remove('active-view');
-  });
-  const targetView = document.getElementById(`${viewId}-view`);
-  if (targetView) {
-    targetView.style.display = 'block';
-    targetView.classList.add('active-view');
-  }
-  if (viewId === 'beranda') {
-    loadDataBarang();
-    loadKondisiBarang();
-  }
-}
 // ... (di bagian lain script.js)
 
 // Tambahkan Event Listener untuk tombol navigasi
@@ -270,7 +255,6 @@ function editBarang(docId) {
     }
   });
 }
-</div>
 
 <script src="script.js"></script> </body>
 </html>
