@@ -109,16 +109,49 @@
 
   <div id="modal-container" class="modal">
     <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
-      <h2 id="modal-title">Form Input</h2>
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">Form Input</h2>
 
-      <div id="modal-barang" class="modal-form" style="display: none;">
-		<div class="modal-content">
-		<span class="close-btn" onclick="closeModal()">&times;</span>
-		<h2 id="modal-title">Form Input</h2>
-
-			<div id="modal-barang" class="modal-form" style="display: none;">
+        <div id="modal-barang" class="modal-form" style="display: none;">
+            <form id="form-barang-modal" onsubmit="saveDataBarang(event)">
+                <label>Nama Barang:</label>
+                <input type="text" id="form-nama-barang" required>
+                <label>Merk/Type:</label>
+                <input type="text" id="form-merk-type">
+                <label>Ruangan:</label>
+                <input type="text" id="form-ruangan">
+                <label>Kondisi:</label>
+                <select id="form-kondisi" required>
+                    <option value="B">Baik</option>
+                    <option value="RR">Rusak Ringan</option>
+                    <option value="RB">Rusak Berat</option>
+                </select>
+                <button type="submit">Save Barang</button>
+            </form>
         </div>
+        
+        <div id="modal-ruangan" class="modal-form" style="display: none;">
+            <form id="form-ruangan-modal" onsubmit="saveDataRuangan(event)">
+                <label>Nama Ruangan:</label>
+                <input type="text" id="form-nama-ruangan" required>
+                <label>Nama Gedung:</label>
+                <input type="text" id="form-nama-gedung" required>
+                <button type="submit">Save Ruangan</button>
+            </form>
+        </div>
+
+        <div id="modal-referensi" class="modal-form" style="display: none;">
+            <form id="form-referensi-modal" onsubmit="saveDataReferensi(event)">
+                <label>Nama Petugas BMN:</label>
+                <input type="text" id="form-nama-petugas" required>
+                <label>NIP / NIK:</label>
+                <input type="text" id="form-nip-nik" required>
+                <button type="submit">Save Referensi</button>
+            </form>
+        </div>
+
+    </div>
+</div>
 
 			<div id="modal-ruangan" class="modal-form" style="display: none;">
         </div>
