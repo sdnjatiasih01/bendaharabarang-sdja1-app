@@ -7,3 +7,26 @@ button { padding: 8px 12px; margin-top: 8px; cursor: pointer; }
 .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
 .modal-content { background: #fff; padding: 20px; margin: 10% auto; width: 400px; border-radius: 6px; }
 .close-btn { float: right; cursor: pointer; font-size: 20px; }
+#top-nav {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+#top-nav .nav-btn {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#top-nav .nav-btn:hover {
+  background: #0056b3;
+}
+
+#top-nav .nav-btn.active {
+  background: #28a745;
+}

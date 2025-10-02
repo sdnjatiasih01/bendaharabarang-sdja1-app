@@ -155,3 +155,74 @@ auth.onAuthStateChanged(user => {
     console.log("User logged out.");
   }
 });
+function applyFilter() {
+  const namaFilter = document.getElementById("filter-nama-barang").value.toLowerCase();
+  const lokasiFilter = document.getElementById("filter-lokasi").value;
+  const kondisiFilter = document.getElementById("filter-kondisi").value;
+
+  const tableBody = document.getElementById("barang-data-body");
+  tableBody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>';
+
+  db.collection("barang").get().then(snapshot => {
+    tableBody.innerHTML = "";
+    let i = 1;
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      let match = true;
+
+      if (namaFilter && !data.namaBarang.toLowerCase().includes(namaFilter)) match = false;
+      if (lokasiFilter && data.ruangan !== lokasiFilter) match = false;
+      if (kondisiFilter && data.kondisi !== kondisiFilter) match = false;
+
+      if (match) {
+        tableBody.innerHTML += `
+          <tr>
+            <td>${i++}</td>
+            <td>${data.namaBarang || '-'}</td>
+            <td>${data.merkType || '-'}</td>
+            <td>${data.ruangan || '-'}</td>
+            <td>${data.kondisi || '-'}</td>
+            <td>
+              <button onclick="editBarang('${doc.id}')">Edit</button>
+              <button onclick="deleteData('${doc.id}', 'barang')">Hapus</button>
+            </td>
+          </tr>
+        `;
+      }
+    });
+    if (tableBody.innerHTML === "") {
+      tableBody.innerHTML = '<tr><td colspan="6">Tidak ada data sesuai filter.</td></tr>';
+    }
+  });
+}
+function editBarang(docId) {
+  db.collection("barang").doc(docId).get().then(doc => {
+    if (doc.exists) {
+      const data = doc.data();
+      document.getElementById("form-nama-barang").value = data.namaBarang;
+      document.getElementById("form-merk-type").value = data.merkType;
+      document.getElementById("form-ruangan").value = data.ruangan;
+      document.getElementById("form-kondisi").value = data.kondisi;
+
+      openModal('barang');
+
+      // override fungsi save agar update, bukan tambah
+      const form = document.getElementById("form-barang-modal");
+      form.onsubmit = (event) => {
+        event.preventDefault();
+        db.collection("barang").doc(docId).update({
+          namaBarang: document.getElementById("form-nama-barang").value,
+          merkType: document.getElementById("form-merk-type").value,
+          ruangan: document.getElementById("form-ruangan").value,
+          kondisi: document.getElementById("form-kondisi").value
+        }).then(() => {
+          console.log("Barang berhasil diupdate!");
+          closeModal();
+          form.reset();
+          // kembalikan fungsi save default
+          form.onsubmit = saveDataBarang;
+        });
+      };
+    }
+  });
+}
