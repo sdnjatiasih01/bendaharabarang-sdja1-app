@@ -43,8 +43,8 @@
                             </select>
                         <button onclick="loadKondisiBarang()">Tampilkan</button>
                     </div>
-
-                    <div id="kondisi-barang-ringkasan" class="data-box">
+					
+				    <div id="kondisi-barang-ringkasan" class="data-box">
                         <p>JUMLAH GEDUNG: <span id="jumlah-gedung">0</span></p>
                         <table>
                             <thead>
@@ -65,7 +65,27 @@
                     <div id="data-ruangan-list" class="data-list">
                         </div>
                 </section>
-                
+				
+                <section id="identitas-view" class="view" style="display: none;">
+					<h2>Data Identitas Aplikasi</h2>
+					<div class="identitas-group">
+					<h3>Identitas Instansi</h3>
+					<p><strong>Nama Aplikasi:</strong> DAFTAR BARANG INVENTARIS RUANGAN</p>
+					<p><strong>Kementerian/Lembaga:</strong> PEMERINTAH KOTA BEKASI</p>
+					<p><strong>Satuan Kerja:</strong> DINAS PENDIDIKAN</p>
+					<p><strong>Unit Kerja:</strong> SDN JATIASIH I</p>
+					<p><strong>Alamat:</strong> Jl. Wibawa Mukti II Gg. Anugrah Rt 002/006 Kel. Jatiasih Kec. Jatiasih</p>
+					</div>
+
+					<div class="identitas-group">
+					<h3>Data Administrator</h3>
+					<p><strong>Nama Pengadministrasi:</strong> WAHYUDIN, S.Pd</p>
+					<p><strong>Atasan Langsung:</strong> DEWI RAHAYU, M.Pd</p>
+					<p><strong>NIP / NIK Atasan:</strong> 19700107 199307 2 002</p>
+					</div>
+
+				</section>
+				
                 <section id="input_barang-view" class="view" style="display: none;">
                     <h2>Input Data Barang</h2>
                     <form id="form-barang" onsubmit="saveDataBarang(event)">
