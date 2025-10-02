@@ -11,8 +11,10 @@ const firebaseConfig = {
     messagingSenderId: "482992763821",
     appId: "1:482992763821:web:3476cb5bd7320d840c2724",
     measurementId: "G-C51S4NNKXM"
-};
+};//
+//=== BARIS KRITIS YANG HILANG/TERHAPUS===
 const app = firebase.initializeApp(firebaseConfig); 
+
 const auth = app.auth(); // <--- BARIS KRITIS INI HARUS ADA!
 const db = app.firestore(); // Baris ini juga penting
 
@@ -147,7 +149,52 @@ function loadDataRuanganTable() {
         tableBody.innerHTML = htmlContent || '<tr><td colspan="5">Tidak ada data ruangan.</td></tr>';
     });
 }
+// script.js (di bagian Logika Tampilan & CRUD)
 
+/**
+ * Memuat daftar Penanggung Jawab dari Firestore ke dalam dropdown di modal ruangan.
+ */
+async function loadPenanggungJawabDropdown() {
+    // ID Dropdown di form Data Ruangan (misalnya: 'barang-penanggung-jawab' di form barang)
+    const dropdown = document.getElementById('barang-penanggung-jawab'); 
+    if (!dropdown) return; // Keluar jika elemen tidak ditemukan
+
+    dropdown.innerHTML = '<option value="">-- Pilih Penanggung Jawab --</option>';
+
+    try {
+        const snapshot = await db.collection("penanggungjawab").orderBy("namaPetugas").get();
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            // Gunakan doc.id sebagai value
+            const option = document.createElement('option');
+            option.value = doc.id; 
+            option.setAttribute('data-nip', data.nipNik || ''); // Simpan NIP/NIK sebagai data attribute
+            option.textContent = data.namaPetugas;
+            dropdown.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error("Gagal memuat daftar penanggung jawab:", error);
+    }
+}
+
+/**
+ * Fungsi yang dipanggil saat memilih Penanggung Jawab untuk mengisi NIP/NIK otomatis.
+ */
+function updateNipNik() {
+    const dropdown = document.getElementById('barang-penanggung-jawab');
+    const nipInput = document.getElementById('barang-nip-nik');
+    
+    // Ambil opsi yang dipilih
+    const selectedOption = dropdown.options[dropdown.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        // Ambil NIP/NIK dari data-nip attribute
+        nipInput.value = selectedOption.getAttribute('data-nip') || '';
+    } else {
+        nipInput.value = '';
+    }
+}
 // ... (loadDataBarang, loadKondisiBarang, saveDataBarang, dll. disesuaikan untuk merender tabel baru) ...
 // CATATAN: Fungsi loadDataBarang perlu diperbarui untuk mengisi #barang-data-body di Beranda.
 
