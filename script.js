@@ -16,6 +16,37 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig); 
 
 const auth = app.auth(); // <--- BARIS KRITIS INI HARUS ADA!
+// --- Fungsi Login ---
+function loginUser() {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            console.log("Login berhasil:", userCredential.user.email);
+            document.getElementById("login-message").textContent = "";
+            // otomatis pindah ke view beranda
+            showView('beranda');
+        })
+        .catch((error) => {
+            console.error("Login gagal:", error.message);
+            document.getElementById("login-message").textContent = "Login gagal: " + error.message;
+        });
+}
+
+// --- Fungsi Logout ---
+function logoutUser() {
+    auth.signOut()
+        .then(() => {
+            console.log("Logout berhasil");
+            document.getElementById("login-container").style.display = "block";
+            document.getElementById("app-container").style.display = "none";
+        })
+        .catch((error) => {
+            console.error("Logout gagal:", error.message);
+        });
+}
+
 const db = app.firestore(); // Baris ini juga penting
 
 // ... (lanjut ke fungsi loginUser dan lainnya) ...
