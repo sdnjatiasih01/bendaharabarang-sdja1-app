@@ -1,7 +1,25 @@
 // ... (Kode Inisialisasi Firebase tetap sama) ...
 
 // --- Logika Navigasi & Tampilan ---
+// Awal file script.js
+// Bagian 1: Konfigurasi Anda
+const firebaseConfig = {
+    apiKey: "...", // Isi dengan API Key Anda yang sebenarnya
+    authDomain: "...",
+    projectId: "...",
+    // ... konfigurasi lainnya
+};
 
+// Bagian 2: Inisialisasi Aplikasi Firebase
+// Baris ini yang menciptakan objek 'firebase' dan 'app'
+const app = firebase.initializeApp(firebaseConfig);
+
+// Bagian 3: Mendefinisikan Variabel 'auth' dan 'db'
+// Variabel 'auth' didefinisikan di sini. Jika baris ini hilang/salah, akan terjadi ReferenceError
+const auth = app.auth(); // <--- BARIS KRITIS INI HARUS ADA!
+const db = app.firestore(); // Baris ini juga penting
+
+// ... (lanjut ke fungsi loginUser dan lainnya) ...
 /**
  * Fungsi untuk menampilkan view tertentu dan menyembunyikan yang lain.
  */
