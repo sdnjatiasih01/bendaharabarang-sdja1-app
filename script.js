@@ -252,7 +252,71 @@ async function deleteData(docId, collectionName) {
         alert("Gagal menghapus data.");
     }
 }
+// ... (di bagian Logika Tampilan & CRUD Sederhana) ...
 
+/**
+ * Mengambil semua nama ruangan dari input form.
+ */
+function getNamaRuanganFromForm() {
+    const ruanganInputs = document.querySelectorAll('#form-ruangan .nama-ruangan-input');
+    const daftarRuangan = [];
+    ruanganInputs.forEach(input => {
+        if (input.value.trim() !== '') {
+            daftarRuangan.push(input.value.trim());
+        }
+    });
+    return daftarRuangan;
+}
+
+/**
+ * Menyimpan data gedung dan ruangan baru ke Firestore. (Create)
+ */
+async function saveDataRuangan(event) {
+    event.preventDefault(); // Mencegah form submit default
+
+    const namaGedung = document.getElementById('nama-gedung').value;
+    const luasBangunan = document.getElementById('luas-bangunan').value;
+    const jumlahLantai = document.querySelector('input[name="jumlah-lantai"]:checked').value;
+    const keterangan = document.getElementById('keterangan-ruangan').value;
+    const daftarRuangan = getNamaRuanganFromForm();
+    
+    if (!namaGedung || !luasBangunan || daftarRuangan.length === 0) {
+        alert("Nama Gedung, Luas Bangunan, dan minimal satu Nama Ruangan harus diisi!");
+        return;
+    }
+
+    try {
+        // 1. Simpan Data Gedung/Bangunan
+        const gedungRef = await db.collection("gedung").add({
+            namaGedung: namaGedung,
+            luasBangunan: parseFloat(luasBangunan),
+            jumlahLantai: parseInt(jumlahLantai),
+            keterangan: keterangan,
+            tanggalInput: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // 2. Simpan Data Ruangan (sebagai sub-collection atau terpisah)
+        // Kita simpan di koleksi 'ruangan' yang sudah kita pakai di Beranda
+        for (const namaRuangan of daftarRuangan) {
+            await db.collection("ruangan").add({
+                namaRuangan: namaRuangan,
+                namaGedung: namaGedung, // Referensi cepat ke gedung
+                gedungId: gedungRef.id, // ID referensi dokumen gedung
+                lantai: 1 // Sederhanakan ke Lantai 1 dulu
+            });
+        }
+        
+        alert(`Data Gedung ${namaGedung} dan ${daftarRuangan.length} Ruangan berhasil disimpan!`);
+        document.getElementById('form-ruangan').reset(); // Reset form
+        loadDataRuangan(); // Refresh dashboard Beranda
+        
+    } catch (error) {
+        console.error("Error saat menyimpan data ruangan:", error);
+        alert("Gagal menyimpan data ruangan. Silakan cek konsol.");
+    }
+}
+
+// ... (lanjutkan dengan fungsi lain) ...
 // Inisiasi tampilan saat pertama kali load
 document.addEventListener('DOMContentLoaded', () => {
     // openForm('beranda'); // Biarkan observer auth yang mengontrol tampilan awal
