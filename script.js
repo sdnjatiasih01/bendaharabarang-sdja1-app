@@ -1,324 +1,161 @@
-// Konfigurasi Firebase Anda
-const firebaseConfig = {
-    apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
-    authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
-    projectId: "inventaris-sekolah-6aa45",
-    storageBucket: "inventaris-sekolah-6aa45.appspot.com",
-    messagingSenderId: "482992763821",
-    appId: "1:482992763821:web:3476cb5bd7320d840c2724",
-    measurementId: "G-C51S4NNKXM"
-};
+// ... (Kode Inisialisasi Firebase tetap sama) ...
 
-// Inisialisasi Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = app.auth();
-const db = app.firestore();
-
-// --- Logika Otentikasi (Login/Logout) ---
+// --- Logika Navigasi & Tampilan ---
 
 /**
- * Fungsi untuk menangani proses login.
- * Catatan: Untuk implementasi nyata, Anda perlu mendaftarkan user di Firebase Auth.
- * Contoh email/password: admin@sekolah.edu / admin123
+ * Fungsi untuk menampilkan view tertentu dan menyembunyikan yang lain.
  */
-async function loginUser() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const msgElement = document.getElementById('login-message');
-    msgElement.textContent = ''; // Reset pesan error
+function showView(viewId) {
+    // Sembunyikan semua view
+    document.querySelectorAll('.content-view').forEach(view => {
+        view.style.display = 'none';
+        view.classList.remove('active-view');
+    });
 
-    if (!email || !password) {
-        msgElement.textContent = "Email dan password harus diisi.";
-        return;
+    // Tampilkan view yang diminta
+    const targetView = document.getElementById(`${viewId}-view`);
+    if (targetView) {
+        targetView.style.display = 'block';
+        targetView.classList.add('active-view');
     }
 
-    try {
-        // Otentikasi dengan Firebase Auth
-        await auth.signInWithEmailAndPassword(email, password);
-        // Jika berhasil, auth state observer akan menangani transisi ke dashboard
-    } catch (error) {
-        console.error("Login Gagal:", error.message);
-        msgElement.textContent = `Login gagal. Error: ${error.code}`;
-    }
-}
-
-/**
- * Fungsi untuk menangani proses logout.
- */
-function logoutUser() {
-    auth.signOut();
-}
-
-/**
- * Observer untuk memantau status otentikasi user.
- */
-auth.onAuthStateChanged(user => {
-    const loginContainer = document.getElementById('login-container');
-    const dashboardContainer = document.getElementById('dashboard-container');
-
-    if (user) {
-        // User terautentikasi (Login berhasil)
-        loginContainer.style.display = 'none';
-        dashboardContainer.style.display = 'block';
-        console.log("User logged in:", user.email);
-        
-        // Muat data setelah login
-        loadDataRuangan();
+    // Update status aktif tombol navigasi
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-view') === viewId) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Khusus untuk Beranda, muat data
+    if (viewId === 'beranda') {
+        loadDataBarang();
         loadKondisiBarang();
-        loadRuanganSelect(); // Muat daftar ruangan untuk form input barang
-
-    } else {
-        // User tidak terautentikasi (Logout atau belum login)
-        loginContainer.style.display = 'block';
-        dashboardContainer.style.display = 'none';
-        console.log("User logged out.");
     }
+    if (viewId === 'ruangan') {
+        loadDataRuanganTable();
+    }
+    // TODO: Tambahkan fungsi load untuk view lainnya (identitas, barang, referensi, dir)
+}
+
+// Tambahkan event listener untuk tombol navigasi
+document.addEventListener('DOMContentLoaded', () => {
+    // Tambahkan ini setelah inisialisasi Firebase selesai
+    document.querySelectorAll('.nav-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const view = e.target.getAttribute('data-view');
+            showView(view);
+        });
+    });
+    
+    // ... (kode DOMContentLoaded lainnya) ...
 });
 
-
-// --- Logika Tampilan & CRUD Sederhana (Create/Read) ---
+// --- Logika Modal (Popup) ---
 
 /**
- * Fungsi untuk mengubah tampilan (view) di dashboard.
+ * Menampilkan modal dan menampilkan form yang sesuai.
  */
-function openForm(viewId) {
-    // Sembunyikan semua view
-    document.querySelectorAll('.view').forEach(view => {
-        view.style.display = 'none';
+function openModal(formId) {
+    const modal = document.getElementById('modal-container');
+    const title = document.getElementById('modal-title');
+    
+    // Sembunyikan semua form di modal
+    document.querySelectorAll('.modal-form').forEach(form => {
+        form.style.display = 'none';
     });
-    // Tampilkan view yang diminta
-    document.getElementById(`${viewId}-view`).style.display = 'block';
-
-    // Update status aktif sidebar
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    // Menemukan item navigasi yang sesuai untuk diaktifkan
-    let activeItem;
-    if (viewId === 'beranda') {
-        activeItem = document.querySelector('.nav-item[href="#"][onclick^="loadKondisiBarang"]');
-    } else {
-        activeItem = document.querySelector(`.nav-item[onclick="openForm('${viewId}')"]`);
-    }
-    if (activeItem) {
-        activeItem.classList.add('active');
-    } else {
-        // Default: aktifkan Beranda jika tidak ditemukan
-        document.querySelector('.nav-item').classList.add('active');
+    
+    // Tampilkan form yang diminta
+    const targetForm = document.getElementById(`modal-${formId}`);
+    if (targetForm) {
+        targetForm.style.display = 'block';
+        
+        // Atur judul modal
+        switch (formId) {
+            case 'identitas': title.textContent = 'Edit Data Identitas'; break;
+            case 'ruangan': title.textContent = 'Input Data Ruangan'; break;
+            case 'barang': title.textContent = 'Input Data Barang'; break;
+            case 'referensi': title.textContent = 'Input Data Referensi'; break;
+            default: title.textContent = 'Form Input';
+        }
+        
+        modal.style.display = 'block';
     }
 }
 
 /**
- * Memuat data ruangan dari Firestore dan menampilkannya.
+ * Menyembunyikan modal.
  */
-function loadDataRuangan() {
-    const listElement = document.getElementById('data-ruangan-list');
-    listElement.innerHTML = 'Memuat data ruangan...';
+function closeModal() {
+    document.getElementById('modal-container').style.display = 'none';
+}
+
+// Tutup modal ketika pengguna mengklik di luar area modal
+window.onclick = function(event) {
+    const modal = document.getElementById('modal-container');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+
+// --- Logika CRUD (Contoh: loadDataRuanganTable) ---
+
+/**
+ * Memuat data ruangan dari Firestore dan menampilkannya dalam bentuk tabel.
+ */
+function loadDataRuanganTable() {
+    const tableBody = document.getElementById('ruangan-data-body');
+    tableBody.innerHTML = '<tr><td colspan="5">Memuat data ruangan...</td></tr>';
     
-    // Mendengarkan perubahan real-time (onSnapshot) dari koleksi 'ruangan'
     db.collection("ruangan").onSnapshot((snapshot) => {
-        listElement.innerHTML = '';
+        tableBody.innerHTML = '';
         let htmlContent = '';
-        let jumlahGedung = new Set();
+        let i = 1;
         
         snapshot.forEach((doc) => {
             const data = doc.data();
-            jumlahGedung.add(data.namaGedung); // Asumsi ada field namaGedung
-            
             htmlContent += `
-                <div>
-                    <strong>Ruangan: ${data.namaRuangan || 'N/A'}</strong> (Gedung: ${data.namaGedung || 'N/A'})
-                    <button onclick="deleteData('${doc.id}', 'ruangan')">Hapus</button>
-                    </div>
+                <tr>
+                    <td>${i++}</td>
+                    <td>${data.namaRuangan || 'N/A'}</td>
+                    <td>${data.namaGedung || 'N/A'}</td>
+                    <td>${data.penanggungJawab || '-'}</td>
+                    <td>
+                        <button onclick="editRuangan('${doc.id}')">Edit</button>
+                        <button onclick="deleteData('${doc.id}', 'ruangan')">Hapus</button>
+                    </td>
+                </tr>
             `;
         });
 
-        listElement.innerHTML = htmlContent || '<p>Tidak ada data ruangan.</p>';
-        document.getElementById('jumlah-gedung').textContent = jumlahGedung.size;
-    }, (error) => {
-        console.error("Error memuat data ruangan:", error);
-        listElement.innerHTML = '<p style="color: red;">Gagal memuat data ruangan.</p>';
+        tableBody.innerHTML = htmlContent || '<tr><td colspan="5">Tidak ada data ruangan.</td></tr>';
     });
 }
 
-/**
- * Memuat ringkasan kondisi barang (Baik, RR, RB) dari Firestore.
- */
-function loadKondisiBarang() {
-    const filter = document.getElementById('filter-barang').value;
-    // Query untuk mengambil semua barang
-    let query = db.collection("barang");
-    // Jika ada filter spesifik, Anda bisa menambahkannya di sini, misalnya berdasarkan Nama Barang/Kategori.
+// ... (loadDataBarang, loadKondisiBarang, saveDataBarang, dll. disesuaikan untuk merender tabel baru) ...
+// CATATAN: Fungsi loadDataBarang perlu diperbarui untuk mengisi #barang-data-body di Beranda.
 
-    query.onSnapshot((snapshot) => {
-        let baik = 0;
-        let rr = 0;
-        let rb = 0;
-        
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            switch (data.kondisi) {
-                case 'B':
-                    baik++;
-                    break;
-                case 'RR':
-                    rr++;
-                    break;
-                case 'RB':
-                    rb++;
-                    break;
-            }
-        });
+// --- Observers / Inisiasi Awal ---
 
-        // Tampilkan hasil
-        document.getElementById('kondisi-baik').textContent = baik;
-        document.getElementById('kondisi-rr').textContent = rr;
-        document.getElementById('kondisi-rb').textContent = rb;
-        document.getElementById('kondisi-total').textContent = baik + rr + rb;
-    }, (error) => {
-        console.error("Error memuat kondisi barang:", error);
-    });
-}
+// Di dalam auth.onAuthStateChanged(user => { ... })
+// Panggil showView('beranda') setelah user login.
 
-/**
- * Memuat daftar ruangan ke dalam select di form input barang.
- * Data diambil dari koleksi 'ruangan'.
- */
-function loadRuanganSelect() {
-    const selectElement = document.getElementById('ruangan-select');
-    selectElement.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
-
-    db.collection("ruangan").get().then((snapshot) => {
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            // Asumsi field yang menyimpan nama ruangan adalah 'namaRuangan'
-            const option = document.createElement('option');
-            option.value = doc.id; // Gunakan ID dokumen sebagai nilai (value)
-            option.textContent = data.namaRuangan;
-            selectElement.appendChild(option);
-        });
-    }).catch(error => {
-        console.error("Error memuat daftar ruangan:", error);
-    });
-}
-
-/**
- * Menyimpan data barang baru ke Firestore. (Create)
- */
-async function saveDataBarang(event) {
-    event.preventDefault(); // Mencegah form submit default
-
-    const ruanganId = document.getElementById('ruangan-select').value;
-    const namaBarang = document.getElementById('nama-barang').value;
-    const kondisi = document.getElementById('kondisi-barang').value;
+auth.onAuthStateChanged(user => {
+    const loginContainer = document.getElementById('login-container');
+    const appContainer = document.getElementById('app-container'); // Ganti dashboard-container
     
-    if (!ruanganId || !namaBarang || !kondisi) {
-        alert("Semua field harus diisi!");
-        return;
-    }
-
-    try {
-        await db.collection("barang").add({
-            ruanganId: ruanganId,
-            namaBarang: namaBarang,
-            kondisi: kondisi, // B, RR, atau RB
-            tanggalInput: firebase.firestore.FieldValue.serverTimestamp() // Timestamp input
-        });
+    if (user) {
+        loginContainer.style.display = 'none';
+        appContainer.style.display = 'block';
+        console.log("User logged in:", user.email);
         
-        alert("Data Barang berhasil disimpan!");
-        document.getElementById('form-barang').reset(); // Reset form
-        loadKondisiBarang(); // Refresh ringkasan kondisi
-        
-    } catch (error) {
-        console.error("Error saat menyimpan data barang:", error);
-        alert("Gagal menyimpan data barang. Silakan cek konsol.");
+        // PENTING: Arahkan ke Beranda saat login
+        showView('beranda'); 
+
+    } else {
+        loginContainer.style.display = 'block';
+        appContainer.style.display = 'none';
+        console.log("User logged out.");
     }
-}
-
-/**
- * Menghapus data dari Firestore. (Delete - Sederhana)
- */
-async function deleteData(docId, collectionName) {
-    if (!confirm(`Yakin ingin menghapus data dari koleksi ${collectionName} dengan ID: ${docId}?`)) {
-        return;
-    }
-    
-    try {
-        await db.collection(collectionName).doc(docId).delete();
-        alert("Data berhasil dihapus!");
-        // onSnapshot (pada loadDataRuangan) akan otomatis me-refresh tampilan
-    } catch (error) {
-        console.error("Error saat menghapus data:", error);
-        alert("Gagal menghapus data.");
-    }
-}
-// ... (di bagian Logika Tampilan & CRUD Sederhana) ...
-
-/**
- * Mengambil semua nama ruangan dari input form.
- */
-function getNamaRuanganFromForm() {
-    const ruanganInputs = document.querySelectorAll('#form-ruangan .nama-ruangan-input');
-    const daftarRuangan = [];
-    ruanganInputs.forEach(input => {
-        if (input.value.trim() !== '') {
-            daftarRuangan.push(input.value.trim());
-        }
-    });
-    return daftarRuangan;
-}
-
-/**
- * Menyimpan data gedung dan ruangan baru ke Firestore. (Create)
- */
-async function saveDataRuangan(event) {
-    event.preventDefault(); // Mencegah form submit default
-
-    const namaGedung = document.getElementById('nama-gedung').value;
-    const luasBangunan = document.getElementById('luas-bangunan').value;
-    const jumlahLantai = document.querySelector('input[name="jumlah-lantai"]:checked').value;
-    const keterangan = document.getElementById('keterangan-ruangan').value;
-    const daftarRuangan = getNamaRuanganFromForm();
-    
-    if (!namaGedung || !luasBangunan || daftarRuangan.length === 0) {
-        alert("Nama Gedung, Luas Bangunan, dan minimal satu Nama Ruangan harus diisi!");
-        return;
-    }
-
-    try {
-        // 1. Simpan Data Gedung/Bangunan
-        const gedungRef = await db.collection("gedung").add({
-            namaGedung: namaGedung,
-            luasBangunan: parseFloat(luasBangunan),
-            jumlahLantai: parseInt(jumlahLantai),
-            keterangan: keterangan,
-            tanggalInput: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // 2. Simpan Data Ruangan (sebagai sub-collection atau terpisah)
-        // Kita simpan di koleksi 'ruangan' yang sudah kita pakai di Beranda
-        for (const namaRuangan of daftarRuangan) {
-            await db.collection("ruangan").add({
-                namaRuangan: namaRuangan,
-                namaGedung: namaGedung, // Referensi cepat ke gedung
-                gedungId: gedungRef.id, // ID referensi dokumen gedung
-                lantai: 1 // Sederhanakan ke Lantai 1 dulu
-            });
-        }
-        
-        alert(`Data Gedung ${namaGedung} dan ${daftarRuangan.length} Ruangan berhasil disimpan!`);
-        document.getElementById('form-ruangan').reset(); // Reset form
-        loadDataRuangan(); // Refresh dashboard Beranda
-        
-    } catch (error) {
-        console.error("Error saat menyimpan data ruangan:", error);
-        alert("Gagal menyimpan data ruangan. Silakan cek konsol.");
-    }
-}
-
-// ... (lanjutkan dengan fungsi lain) ...
-// Inisiasi tampilan saat pertama kali load
-document.addEventListener('DOMContentLoaded', () => {
-    // openForm('beranda'); // Biarkan observer auth yang mengontrol tampilan awal
-    console.log("Aplikasi Inventaris Dimuat.");
 });

@@ -5,55 +5,45 @@ body {
     background-color: #f4f7fa;
 }
 
-/* Login Page Styling */
-#login-container {
-    max-width: 400px;
-    margin: 100px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-#login-container h2 {
-    text-align: center;
-    color: #007bff;
-}
-#login-container input, #login-container button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-#login-container button {
-    background-color: #007bff;
+/* --- HEADER & TOP NAV BAR --- */
+#main-header {
+    background-color: #007bff; /* Biru terang */
     color: white;
-    cursor: pointer;
-    font-size: 16px;
-}
-#login-container button:hover {
-    background-color: #0056b3;
-}
-
-/* Dashboard Styling */
-#dashboard-container {
-    background-color: #f4f7fa;
-    min-height: 100vh;
-}
-header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px 20px;
+    padding: 10px 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-header h1 {
+#main-header h1 {
+    font-size: 18px;
     margin: 0;
-    font-size: 20px;
 }
-header button {
+#top-nav {
+    display: flex;
+    flex-grow: 1; /* Biarkan nav mengambil ruang di tengah */
+    justify-content: center;
+    gap: 5px;
+}
+.nav-btn {
+    background-color: transparent;
+    color: white;
+    border: 1px solid transparent;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.nav-btn.active {
+    background-color: white;
+    color: #007bff; /* Tombol aktif berwarna biru */
+    border: 1px solid #0056b3;
+}
+#logout-btn {
     background-color: #dc3545;
     color: white;
     border: none;
@@ -61,205 +51,108 @@ header button {
     border-radius: 4px;
     cursor: pointer;
 }
-#main-content {
-    display: flex;
-}
-#sidebar {
-    width: 250px;
-    background-color: #343a40;
-    padding: 20px 0;
-    min-height: calc(100vh - 50px); /* Sesuaikan dengan tinggi header */
-}
-.nav-item {
-    display: block;
-    color: white;
-    padding: 12px 20px;
-    text-decoration: none;
-    border-left: 5px solid transparent;
-}
-.nav-item:hover, .nav-item.active {
-    background-color: #495057;
-    border-left: 5px solid #ffc107;
-}
 
-#content-area {
-    flex-grow: 1;
+/* --- KONTEN DASHBOARD --- */
+#dashboard-content {
     padding: 20px;
 }
-.view {
+.content-view {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-height: 80vh;
 }
-
-/* Dashboard Specific Styles */
-.kriteria-barang {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#kondisi-barang-ringkasan table {
+.data-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
 }
-#kondisi-barang-ringkasan th, #kondisi-barang-ringkasan td {
+.data-table th, .data-table td {
     border: 1px solid #ddd;
     padding: 10px;
-    text-align: center;
+    text-align: left;
 }
-#kondisi-barang-ringkasan th {
+.data-table th {
     background-color: #e9ecef;
 }
-
-.data-list div {
-    border: 1px solid #007bff;
+.table-actions {
+    text-align: right;
     margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 4px;
-    background-color: #e7f0ff;
 }
-
-/* Form Styles */
-#form-barang .form-row {
-    margin-bottom: 15px;
-}
-#form-barang label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-#form-barang input, #form-barang select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-#form-barang button {
-    padding: 10px 15px;
-    margin-right: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-#form-barang button[type="submit"] {
+.btn-primary {
     background-color: #28a745;
     color: white;
-}
-#form-barang button[type="reset"] {
-    background-color: #ffc107;
-    color: #333;
-}
-/* Tambahkan di bagian mana saja di style.css */
-.identitas-group {
-    border: 1px solid #007bff;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #e7f0ff;
-}
-
-.identitas-group h3 {
-    background-color: #007bff;
-    color: white;
-    padding: 8px;
-    margin: -15px -15px 15px -15px; /* Sesuaikan margin untuk memenuhi border */
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-}
-
-.identitas-group p {
-    margin: 5px 0;
-}
-/* Styling Umum untuk Grup Form (Bisa dipakai juga untuk form barang) */
-.form-group-ruangan {
-    margin-bottom: 15px;
-}
-.form-group-ruangan label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-.form-group-ruangan input[type="text"], 
-.form-group-ruangan input[type="number"], 
-.form-group-ruangan textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-.form-group-ruangan textarea {
-    height: 60px;
-}
-
-.form-group-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.form-group-header label {
-    font-weight: bold;
-    margin-right: 10px;
-}
-.form-group-header input[type="number"] {
-    width: 50px;
-    text-align: center;
-    background-color: #eee;
-    border: 1px solid #aaa;
-}
-
-/* Styling Radio Group Lantai */
-.radio-group label {
-    display: inline-block;
-    font-weight: normal;
-    margin-right: 15px;
-}
-.radio-group input[type="radio"] {
-    margin-right: 5px;
-    width: auto;
-}
-
-/* Container Daftar Ruangan */
-.ruangan-list-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    border: 1px solid #007bff; /* Border biru seperti di screenshot */
-    padding: 10px;
-    margin-top: 15px;
-}
-.ruangan-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-.ruangan-column label {
-    font-weight: normal;
-    margin-top: 8px;
-    margin-bottom: 2px;
-}
-.ruangan-column input.nama-ruangan-input {
-    width: 95%; /* Sesuaikan agar ada sedikit ruang */
-}
-
-/* Form Actions (Save, New, Close, Edit) */
-.form-actions {
-    margin-top: 20px;
-    text-align: right;
-}
-.form-actions button {
-    padding: 10px 15px;
-    margin-left: 10px;
+    padding: 8px 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
-.form-actions button[type="submit"] { background-color: #28a745; color: white; }
-.form-actions button[type="reset"] { background-color: #ffc107; color: #333; }
-.form-actions button[onclick="closeForm()"] { background-color: #6c757d; color: white; }
-.form-actions button[onclick="editForm()"] { background-color: #17a2b8; color: white; }
+/* Style untuk filter */
+.filter-panel {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #e6f0ff;
+    border-radius: 4px;
+}
+.filter-panel label {
+    font-weight: bold;
+}
+
+/* --- MODAL (POPUP) STYLING --- */
+.modal {
+    display: none; /* Tersembunyi secara default */
+    position: fixed;
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4); /* Background gelap transparan */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% dari atas dan di tengah */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close-btn:hover,
+.close-btn:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+.modal-form input, .modal-form textarea, .modal-form select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.modal-form button[type="submit"] {
+    margin-top: 15px;
+}
+
+/* (Pertahankan styling Login Page yang lama) */
