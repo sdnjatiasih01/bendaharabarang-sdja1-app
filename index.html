@@ -1,192 +1,105 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi SIMDARA SDN JATIASIH I</title>
-    <link rel="stylesheet" href="style.css">
-	
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi SIMDARA SDN JATIASIH I</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 </head>
 <body>
+  <div id="login-container">
+    <h2>Login Aplikasi</h2>
+    <input type="text" id="login-email" placeholder="Email (admin@sekolah.edu)">
+    <input type="password" id="login-password" placeholder="Password (admin123)">
+    <button onclick="loginUser()">Login</button>
+    <p id="login-message" style="color: red;"></p>
+  </div>
 
-    <div id="login-container">
-        <h2>Login Aplikasi</h2>
-        <input type="text" id="login-email" placeholder="Email (admin@sekolah.edu)">
-        <input type="password" id="login-password" placeholder="Password (admin123)">
-        <button onclick="loginUser()">Login</button>
-		<button id="logout-btn" onclick="logoutUser()">Logout</button>
-        <p id="login-message" style="color: red;"></p>
-    </div>
+  <div id="app-container" style="display: none;">
+    <header id="main-header">
+      <h1>APLIKASI DAFTAR BARANG INVENTARIS RUANGAN</h1>
+      <nav id="top-nav">
+        <button class="nav-btn active" data-view="beranda">Beranda</button>
+        <button class="nav-btn" data-view="identitas">Identitas</button>
+        <button class="nav-btn" data-view="ruangan">Data Ruangan</button>
+        <button class="nav-btn" data-view="barang">Data Barang</button>
+        <button class="nav-btn" data-view="referensi">Data Reff</button>
+        <button class="nav-btn" data-view="dir">Data Inventaris Ruangan (DIR)</button>
+      </nav>
+      <button id="logout-btn" onclick="logoutUser()">Logout</button>
+    </header>
 
-    <div id="app-container" style="display: none;">
-        
-        <header id="main-header">
-            <h1>APLIKASI DAFTAR BARANG INVENTARIS RUANGAN</h1>
-            <nav id="top-nav">
-                <button class="nav-btn active" data-view="beranda">Beranda</button>
-                <button class="nav-btn" data-view="identitas">Identitas</button>
-                <button class="nav-btn" data-view="ruangan">Data Ruangan</button>
-                <button class="nav-btn" data-view="barang">Data Barang</button>
-                <button class="nav-btn" data-view="referensi">Data Reff</button>
-                <button class="nav-btn" data-view="dir">Data Inventaris Ruangan (DIR)</button>
-            </nav>
-            <button id="logout-btn" onclick="logoutUser()">Logout</button>
-        </header>
-        
-        <main id="dashboard-content">
-
-            <section id="beranda-view" class="content-view active-view">
-                <h2>Beranda - Monitoring Barang</h2>
-                
-                <div class="filter-panel">
-                    <label>Nama Barang:</label>
-                    <input type="text" id="filter-nama-barang" placeholder="Cari Nama Barang...">
-                    <label>Lokasi (Ruangan):</label>
-                    <select id="filter-lokasi">
-                        </select>
-                    <label>Kondisi:</label>
-                    <select id="filter-kondisi">
-                        <option value="">Semua</option>
-                        <option value="B">Baik</option>
-                        <option value="RR">Rusak Ringan</option>
-                        <option value="RB">Rusak Berat</option>
-                    </select>
-                    <button onclick="applyFilter()">Tampilkan Data</button>
-                </div>
-                
-                <div id="kondisi-barang-ringkasan" class="data-box">
-                    <table>
-                        <thead><tr><th>BAIK</th><th>RUSAK RINGAN</th><th>RUSAK BERAT</th><th>TOTAL</th></tr></thead>
-                        <tbody><tr>
-                            <td id="kondisi-baik">0</td><td id="kondisi-rr">0</td>
-                            <td id="kondisi-rb">0</td><td id="kondisi-total">0</td>
-                        </tr></tbody>
-                    </table>
-                </div>
-
-                <h3>Tabel Data Barang Inventaris</h3>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="openModal('barang')"> + Input Data Barang Baru</button>
-                </div>
-                <table id="tabel-barang" class="data-table">
-                    <thead>
-                        <tr><th>No</th><th>Nama Barang</th><th>Merk/Type</th><th>Ruangan</th><th>Kondisi</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="barang-data-body">
-                        </tbody>
-                </table>
-            </section>
-
-            <section id="identitas-view" class="content-view" style="display: none;">
-                <h2>Data Identitas Aplikasi</h2>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="openModal('identitas')"> + Edit Identitas</button>
-                </div>
-                <div id="tabel-identitas-display" class="data-display-card">
-                    <h3>Identitas Instansi</h3>
-                    <p><strong>Nama Aplikasi:</strong> <span id="identitas-nama-aplikasi">...</span></p>
-                    <p><strong>Kementerian/Lembaga:</strong> <span id="identitas-kemen">...</span></p>
-                    <h3>Data Administrator</h3>
-                    <p><strong>Nama Pengadministrasi:</strong> <span id="identitas-admin">...</span></p>
-                    <p><strong>Atasan Langsung:</strong> <span id="identitas-atasan">...</span></p>
-                </div>
-            </section>
-            
-            <section id="ruangan-view" class="content-view" style="display: none;">
-                <h2>Data Ruangan</h2>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="openModal('ruangan')"> + Input Data Ruangan</button>
-                </div>
-                <table id="tabel-ruangan" class="data-table">
-                    <thead>
-                        <tr><th>No</th><th>Nama Ruangan</th><th>Nama Gedung</th><th>Penanggung Jawab</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="ruangan-data-body">
-                        </tbody>
-                </table>
-            </section>
-
-            <section id="barang-view" class="content-view" style="display: none;">
-                <h2>Data Barang (Master Data)</h2>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="openModal('barang')"> + Input Data Barang</button>
-                </div>
-                <table id="tabel-master-barang" class="data-table">
-                    <thead>
-                        <tr><th>No</th><th>Nama Barang</th><th>Merk/Type</th><th>Kondisi</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="master-barang-data-body">
-                        </tbody>
-                </table>
-            </section>
-            
-            <section id="referensi-view" class="content-view" style="display: none;">
-                <h2>Data Referensi (Reff)</h2>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="openModal('referensi')"> + Input Data Referensi</button>
-                </div>
-                <table id="tabel-referensi" class="data-table">
-                    <thead>
-                        <tr><th>No</th><th>Nama Barang</th><th>Merk/Type</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="referensi-data-body">
-                        <tr><td colspan="4">Fitur ini memerlukan koleksi Firebase baru 'referensi'</td></tr>
-                    </tbody>
-                </table>
-            </section>
-            
-            <section id="dir-view" class="content-view" style="display: none;">
-                <h2>Data Inventaris Ruangan (DIR)</h2>
-                <p>Fitur ini akan menampilkan gabungan data Ruangan dan Barang yang ada di ruangan tersebut (seperti format cetak).</p>
-                <div id="dir-content">
-                    </div>
-            </section>
-
-        </main>
-    </div>
-    
-    <div id="modal-container" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title">Form Input</h2>
-            
-            <div id="modal-identitas" class="modal-form" style="display: none;">
-                <form onsubmit="saveIdentitas(event)">
-                    <label>Nama Aplikasi:</label><input type="text" id="form-app-name" required>
-                    <label>Alamat:</label><textarea id="form-alamat"></textarea>
-                    <button type="submit">Simpan Identitas</button>
-                </form>
-            </div>
-            
-            <div id="modal-ruangan" class="modal-form" style="display: none;">
-                <form id="form-ruangan-modal" onsubmit="saveDataRuangan(event)">
-                    <p> [Form INPUT DATA RUANGAN dari bagian 1. index.html] </p>
-                    <button type="submit">Save Ruangan</button>
-                </form>
-            </div>
-            
-            <div id="modal-barang" class="modal-form" style="display: none;">
-                <form id="form-barang-modal" onsubmit="saveDataBarang(event)">
-                    <p> [Form INPUT DATA BARANG dari bagian 1. index.html] </p>
-                    <button type="submit">Save Barang</button>
-                </form>
-            </div>
-            
-            <div id="modal-referensi" class="modal-form" style="display: none;">
-                <form onsubmit="saveDataReferensi(event)">
-                    <label>Nama Barang Reff:</label><input type="text" id="form-reff-nama" required>
-                    <label>Merk/Type Reff:</label><input type="text" id="form-reff-merk">
-                    <button type="submit">Simpan Referensi</button>
-                </form>
-            </div>
-            
+    <main id="dashboard-content">
+      <section id="beranda-view" class="content-view active-view">
+        <h2>Beranda - Monitoring Barang</h2>
+        <div class="filter-panel">
+          <label>Nama Barang:</label>
+          <input type="text" id="filter-nama-barang" placeholder="Cari Nama Barang...">
+          <label>Lokasi (Ruangan):</label>
+          <select id="filter-lokasi"></select>
+          <label>Kondisi:</label>
+          <select id="filter-kondisi">
+            <option value="">Semua</option>
+            <option value="B">Baik</option>
+            <option value="RR">Rusak Ringan</option>
+            <option value="RB">Rusak Berat</option>
+          </select>
+          <button onclick="applyFilter()">Tampilkan Data</button>
         </div>
+
+        <div id="kondisi-barang-ringkasan" class="data-box">
+          <table>
+            <thead><tr><th>BAIK</th><th>RUSAK RINGAN</th><th>RUSAK BERAT</th><th>TOTAL</th></tr></thead>
+            <tbody><tr>
+              <td id="kondisi-baik">0</td><td id="kondisi-rr">0</td>
+              <td id="kondisi-rb">0</td><td id="kondisi-total">0</td>
+            </tr></tbody>
+          </table>
+        </div>
+
+        <h3>Tabel Data Barang Inventaris</h3>
+        <div class="table-actions">
+          <button class="btn btn-primary" onclick="openModal('barang')"> + Input Data Barang Baru</button>
+        </div>
+        <table id="tabel-barang" class="data-table">
+          <thead>
+            <tr><th>No</th><th>Nama Barang</th><th>Merk/Type</th><th>Ruangan</th><th>Kondisi</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="barang-data-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal-container" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h2 id="modal-title">Form Input</h2>
+
+      <div id="modal-barang" class="modal-form" style="display: none;">
+        <form id="form-barang-modal" onsubmit="saveDataBarang(event)">
+          <label>Nama Barang:</label>
+          <input type="text" id="form-nama-barang" required>
+          <label>Merk/Type:</label>
+          <input type="text" id="form-merk-type">
+          <label>Ruangan:</label>
+          <input type="text" id="form-ruangan">
+          <label>Kondisi:</label>
+          <select id="form-kondisi" required>
+            <option value="B">Baik</option>
+            <option value="RR">Rusak Ringan</option>
+            <option value="RB">Rusak Berat</option>
+          </select>
+          <button type="submit">Save Barang</button>
+        </form>
+      </div>
     </div>
-    <select id="barang-penanggung-jawab" onchange="updateNipNik()"> 
-    </select>
-    <script src="script.js"></script>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
