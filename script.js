@@ -166,6 +166,39 @@ function deleteData(docId, collectionName) {
     .catch(error => console.error("Gagal hapus:", error));
 }
 
+// script.js (Tambahkan di bagian CRUD)
+
+function loadPenanggungJawabTable() {
+    // Pastikan ID ini sesuai dengan tabel di index.html
+    const tableBody = document.getElementById('referensi-bmn-data-body');
+    tableBody.innerHTML = '<tr><td colspan="4">Memuat data referensi...</td></tr>';
+    
+    // Asumsi koleksi di Firestore bernama 'penanggungjawab'
+    db.collection("penanggungjawab").orderBy("namaPetugas").onSnapshot((snapshot) => {
+        tableBody.innerHTML = '';
+        let htmlContent = '';
+        let i = 1;
+        
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            htmlContent += `
+                <tr>
+                    <td>${i++}</td>
+                    <td>${data.namaPetugas || 'N/A'}</td>
+                    <td>${data.nipNik || 'N/A'}</td>
+                    <td>
+                        <button onclick="deleteData('${doc.id}', 'penanggungjawab')">Hapus</button>
+                    </td>
+                </tr>
+            `;
+        });
+        tableBody.innerHTML = htmlContent || '<tr><td colspan="4">Tidak ada data penanggung jawab.</td></tr>';
+    }, (error) => {
+        console.error("Error memuat data penanggung jawab:", error);
+        tableBody.innerHTML = '<tr><td colspan="4" style="color: red;">Gagal memuat data.</td></tr>';
+    });
+}
+
 // Observer
 auth.onAuthStateChanged(user => {
   const loginContainer = document.getElementById('login-container');
