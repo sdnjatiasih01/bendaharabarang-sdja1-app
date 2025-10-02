@@ -39,9 +39,6 @@ function logoutUser() {
   });
 }
 
-// View
-// ... (di bagian lain script.js)
-
 // Tambahkan Event Listener untuk tombol navigasi
 document.addEventListener('DOMContentLoaded', () => {
     // Logika ini akan berjalan setelah seluruh HTML dimuat
