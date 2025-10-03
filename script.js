@@ -515,8 +515,10 @@ function editBarang(docId) {
     const submitButton = document.querySelector('#form-barang button[type="submit"]');
     submitButton.textContent = 'Memuat...';
 
+    // PASTIKAN .doc(docId) SEBELUM .get()
     db.collection("barang").doc(docId).get()
         .then(doc => {
+            // PASTIKAN doc.exists DIGUNAKAN UNTUK CEK KEBERADAAN DOKUMEN
             if (doc.exists) {
                 const data = doc.data();
                 
@@ -524,7 +526,7 @@ function editBarang(docId) {
                 document.getElementById("merk-type").value = data.merkType || '';
                 document.getElementById("kondisi-barang").value = data.kondisi;
 
-                // Menggunakan setTimeout untuk memastikan dropdown sudah dimuat secara async
+                // Memastikan dropdown ruangan sudah terisi sebelum set value
                 setTimeout(() => {
                     const ruanganSelect = document.getElementById("ruangan-select");
                     if (ruanganSelect) {
