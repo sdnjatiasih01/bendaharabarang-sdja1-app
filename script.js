@@ -19,7 +19,7 @@ const db = app.firestore();
 let currentBarangId = null;
 
 // =================================================================
-// 2. AUTHENTICATION & UI SWITCHING
+// 2. AUTHENTICATION & UI SWITCHING (REVISI AUTENTIKASI)
 // =================================================================
 
 function showAuthView(view) {
@@ -40,8 +40,8 @@ function showAuthView(view) {
 }
 
 function registerUser() {
-    const email = document.getElementById("register-email").value;
-    const password = document.getElementById("register-password").value;
+    const email = document.getElementById("register-email").value.trim();
+    const password = document.getElementById("register-password").value.trim();
     const messageElement = document.getElementById("reg-message");
     messageElement.textContent = "Mendaftarkan...";
 
@@ -49,9 +49,14 @@ function registerUser() {
         messageElement.textContent = "Password harus minimal 6 karakter.";
         return;
     }
+    if (!email) {
+        messageElement.textContent = "Email tidak boleh kosong.";
+        return;
+    }
 
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
+            // Simpan data user ke Firestore
             db.collection("users").doc(userCredential.user.uid).set({
                 email: email,
                 role: 'guru',
@@ -63,28 +68,47 @@ function registerUser() {
             showAuthView('login');
         })
         .catch(error => {
-            messageElement.textContent = `Registrasi gagal: ${error.message}`;
+            // Penanganan error Firebase yang lebih detail
+            if (error.code === 'auth/email-already-in-use') {
+                messageElement.textContent = "Registrasi gagal: Email sudah terdaftar.";
+            } else if (error.code === 'auth/invalid-email') {
+                messageElement.textContent = "Registrasi gagal: Format email tidak valid.";
+            } else {
+                messageElement.textContent = `Registrasi gagal: ${error.message}`;
+            }
         });
 }
 
 function loginUser() {
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value.trim();
     const messageElement = document.getElementById("auth-message");
     messageElement.textContent = "Loading...";
+
+    if (!email || !password) {
+        messageElement.textContent = "Email dan Password tidak boleh kosong.";
+        return;
+    }
 
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
             messageElement.textContent = ""; 
         })
         .catch(error => {
-            messageElement.textContent = `Login gagal: Email/Password salah atau ${error.message}`; 
+            // Penanganan error Firebase yang lebih detail
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                messageElement.textContent = "Login gagal: Email atau Password salah.";
+            } else if (error.code === 'auth/invalid-email') {
+                messageElement.textContent = "Login gagal: Format email tidak valid.";
+            } else {
+                messageElement.textContent = `Login gagal: ${error.message}`; 
+            }
         });
 }
 
 function logoutUser() {
     auth.signOut().then(() => {
-        // Tanganin perubahan status di observer
+        // Observer auth.onAuthStateChanged akan menangani tampilan login
     }).catch(error => {
         console.error("Logout gagal:", error.message);
     });
@@ -132,7 +156,6 @@ function showView(viewId) {
         loadDataBarang(); 
     } else if (viewId === 'input_barang') {
         loadRuanganForInputBarang(); 
-        // Reset form barang
         document.getElementById("form-barang").reset();
         document.querySelector('#form-barang button[type="submit"]').textContent = 'Save';
         currentBarangId = null;
@@ -141,14 +164,13 @@ function showView(viewId) {
         document.getElementById("form-gedung")?.reset();
         document.getElementById("form-ruangan")?.reset();
         
-        // Sembunyikan tabel referensi saat masuk ke view
         document.getElementById("gedung-data-table")?.style.display = 'none';
         document.getElementById("ruangan-data-table")?.style.display = 'none';
     }
 } 
 
 // =================================================================
-// 3. DATA RUANGAN & GEDUNG (CRUD)
+// 3. DATA RUANGAN & GEDUNG (CRUD DENGAN VALIDASI PENGHAPUSAN)
 // =================================================================
 
 // SIMPAN DATA GEDUNG
@@ -217,7 +239,7 @@ function loadGedungForDropdown() {
     if (!gedungSelect) return;
     gedungSelect.innerHTML = '<option value="" disabled selected>Pilih Gedung</option>';
     
-    db.collection("gedung").get().then(snapshot => {
+    db.collection("gedung").orderBy("namaGedung").get().then(snapshot => {
         snapshot.forEach(doc => {
             const data = doc.data();
             const option = document.createElement('option');
@@ -240,11 +262,11 @@ function loadRuanganForInputBarang() {
     if (!ruanganSelect) return;
     ruanganSelect.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
 
-    db.collection("ruangan").get().then(snapshot => {
+    db.collection("ruangan").orderBy("namaRuangan").get().then(snapshot => {
         snapshot.forEach(doc => {
             const data = doc.data();
             const option = document.createElement('option');
-            option.value = data.namaRuangan; // Penting: Hanya menggunakan nama ruangan sebagai value
+            option.value = data.namaRuangan; 
             option.textContent = `${data.namaRuangan} (${data.namaGedung})`;
             ruanganSelect.appendChild(option);
         });
@@ -264,7 +286,7 @@ function loadRuanganForFilter() {
     if (!filterSelect) return;
     filterSelect.innerHTML = '<option value="">Semua Ruangan</option>';
 
-    db.collection("ruangan").get().then(snapshot => {
+    db.collection("ruangan").orderBy("namaRuangan").get().then(snapshot => {
         snapshot.forEach(doc => {
             const data = doc.data();
             const option = document.createElement('option');
@@ -281,7 +303,6 @@ function loadDataReference(collectionName) {
     const table = document.getElementById(`${collectionName}-data-table`);
     if (!tableBody || !table) return;
 
-    // Toggle tampilan tabel
     if (table.style.display === 'none') {
         table.style.display = 'table';
     } else {
@@ -327,10 +348,10 @@ async function deleteData(docId, collectionName, referenceName) {
 
     try {
         if (collectionName === 'gedung') {
-            // VALIDASI GEDUNG: Cek apakah masih ada ruangan yang terikat pada gedung ini
+            // VALIDASI GEDUNG: Cek apakah masih ada ruangan yang terikat
             const ruanganSnapshot = await db.collection("ruangan").where("namaGedung", "==", referenceName).limit(1).get();
             if (!ruanganSnapshot.empty) {
-                alert(`Gagal menghapus Gedung "${referenceName}". Masih ada ${ruanganSnapshot.size} atau lebih Ruangan yang terikat pada Gedung ini. Hapus semua Ruangan terlebih dahulu.`);
+                alert(`Gagal menghapus Gedung "${referenceName}". Masih ada ruangan yang terikat. Hapus semua Ruangan terlebih dahulu.`);
                 return;
             }
         } 
@@ -339,7 +360,7 @@ async function deleteData(docId, collectionName, referenceName) {
             // VALIDASI RUANGAN: Cek apakah masih ada barang di ruangan ini
             const barangSnapshot = await db.collection("barang").where("ruangan", "==", referenceName).limit(1).get();
             if (!barangSnapshot.empty) {
-                alert(`Gagal menghapus Ruangan "${referenceName}". Masih ada ${barangSnapshot.size} atau lebih Barang di dalam Ruangan ini. Pindahkan atau Hapus semua Barang terlebih dahulu.`);
+                alert(`Gagal menghapus Ruangan "${referenceName}". Masih ada barang di dalamnya. Pindahkan atau Hapus semua Barang terlebih dahulu.`);
                 return;
             }
         }
@@ -353,12 +374,14 @@ async function deleteData(docId, collectionName, referenceName) {
         if (collectionName === 'barang') {
             loadKondisiBarang(); 
             loadDataBarang();
-        } else if (collectionName === 'ruangan' || collectionName === 'gedung') {
-            loadGedungForDropdown();
+        } else if (collectionName === 'ruangan') {
             loadRuanganForInputBarang();
             loadRuanganForFilter();
+            loadDataReference(collectionName); 
+        } else if (collectionName === 'gedung') {
+            loadGedungForDropdown();
             loadKondisiBarang();
-            loadDataReference(collectionName); // Muat ulang tabel referensi
+            loadDataReference(collectionName);
         }
 
     } catch (error) {
@@ -375,12 +398,16 @@ async function deleteData(docId, collectionName, referenceName) {
 function saveDataBarang(event) {
     event.preventDefault();
     const ruangan = document.getElementById("ruangan-select").value; 
-    const namaBarang = document.getElementById("nama-barang").value; 
-    const merkType = document.getElementById("merk-type").value; 
+    const namaBarang = document.getElementById("nama-barang").value.trim(); 
+    const merkType = document.getElementById("merk-type").value.trim(); 
     const kondisi = document.getElementById("kondisi-barang").value; 
     
     if (!ruangan || ruangan === "") {
         alert("Mohon pilih Nama Ruangan.");
+        return;
+    }
+    if (!namaBarang) {
+        alert("Nama Barang tidak boleh kosong.");
         return;
     }
 
@@ -521,7 +548,6 @@ function editBarang(docId) {
                 document.getElementById("merk-type").value = data.merkType || '';
                 document.getElementById("kondisi-barang").value = data.kondisi;
 
-                // Memastikan dropdown ruangan sudah terisi sebelum set value
                 setTimeout(() => {
                     document.getElementById("ruangan-select").value = data.ruangan;
                 }, 300); 
