@@ -71,7 +71,7 @@
                             <h4>Jumlah Gedung</h4>
                             <p id="jumlah-gedung">0</p>
                         </div>
-                        </div>
+                    </div>
                     
                     <div class="data-section">
                         <h3>Daftar Barang Terbaru</h3>
@@ -99,28 +99,59 @@
                 </section>
 
                 <section id="input_ruangan-view" class="view" style="display: none;">
-                    <h2>Input Data Ruangan</h2>
-                    <form id="form-ruangan" onsubmit="saveDataRuangan(event)">
-                        <div class="form-row">
-                            <label>Nama Gedung:</label>
-                            <input type="text" id="nama-gedung" required>
-                        </div>
-                        <div class="form-row">
-                            <label>Nama Ruangan 1:</label>
-                            <input type="text" class="nama-ruangan-input" id="ruangan-1">
-                        </div>
-                        <div class="form-row">
-                            <label>Nama Ruangan 2:</label>
-                            <input type="text" class="nama-ruangan-input" id="ruangan-2">
-                        </div>
-                        <div class="form-row">
-                            <label>Nama Ruangan 3:</label>
-                            <input type="text" class="nama-ruangan-input" id="ruangan-3">
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-save">Save</button>
-                        </div>
-                    </form>
+                    <h2>Input Data Ruangan & Gedung</h2>
+                    
+                    <div class="data-section">
+                        <h3>1. Input Nama Gedung Baru</h3>
+                        <form id="form-gedung" onsubmit="saveDataGedung(event)">
+                            <div class="form-row">
+                                <label>Nama Gedung Baru:</label>
+                                <input type="text" id="nama-gedung-input" required>
+                                <button type="submit" class="btn-save">Simpan Gedung</button>
+                            </div>
+                        </form>
+                        <p style="margin-top: 10px;">
+                            Daftar Gedung (Hapus dengan risiko jika tidak ada Ruangan di dalamnya):
+                            <button class="btn btn-show-data" onclick="loadDataReference('gedung')">Tampilkan Data Gedung</button>
+                        </p>
+                        <table id="gedung-data-table" class="data-table" style="margin-top: 10px; display:none;">
+                            <thead><tr><th>Nama Gedung</th><th>Aksi</th></tr></thead>
+                            <tbody id="gedung-data-body"></tbody>
+                        </table>
+                    </div>
+
+                    <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
+
+                    <div class="data-section">
+                        <h3>2. Input Nama Ruangan Baru</h3>
+                        <form id="form-ruangan" onsubmit="saveDataRuangan(event)">
+                            
+                            <div class="form-row">
+                                <label>Nama Ruangan:</label>
+                                <input type="text" id="nama-ruangan" required>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Pilih Gedung Induk:</label>
+                                <select id="gedung-select" required>
+                                    <option value="" disabled selected>Pilih Gedung</option>
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-save">Simpan Ruangan</button>
+                            </div>
+                        </form>
+                        <p style="margin-top: 10px;">
+                            Daftar Ruangan (Hapus dengan risiko jika tidak ada Barang di dalamnya):
+                            <button class="btn btn-show-data" onclick="loadDataReference('ruangan')">Tampilkan Data Ruangan</button>
+                        </p>
+                        <table id="ruangan-data-table" class="data-table" style="margin-top: 10px; display:none;">
+                            <thead><tr><th>Nama Ruangan</th><th>Nama Gedung</th><th>Aksi</th></tr></thead>
+                            <tbody id="ruangan-data-body"></tbody>
+                        </table>
+                    </div>
+
                 </section>
                 
                 <section id="input_barang-view" class="view" style="display: none;">
