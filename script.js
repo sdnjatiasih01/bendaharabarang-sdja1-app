@@ -2,65 +2,64 @@
 // 1. FIREBASE CONFIGURATION
 // =================================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
-  authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
-  projectId: "inventaris-sekolah-6aa45",
-  storageBucket: "inventaris-sekolah-6aa45.appspot.com",
-  messagingSenderId: "482992763821",
-  appId: "1:482992763821:web:3476cb5bd7320d840c2724",
-  measurementId: "G-C51S4NNKXM"
+    // Pastikan ini adalah konfigurasi Firebase Anda yang sebenarnya
+    apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
+    authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
+    projectId: "inventaris-sekolah-6aa45",
+    storageBucket: "inventaris-sekolah-6aa45.appspot.com",
+    messagingSenderId: "482992763821",
+    appId: "1:482992763821:web:3476cb5bd7320d840c2724",
+    measurementId: "G-C51S4NNKXM"
 };
 const app = firebase.initializeApp(firebaseConfig);
 const auth = app.auth();
 const db = app.firestore();
 
 // =================================================================
-// 2. AUTHENTICATION (LOGIN/LOGOUT)
+// 2. AUTHENTICATION (LOGIN/LOGOUT & OBSERVER)
 // =================================================================
 
 function loginUser() {
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-  const messageElement = document.getElementById("login-message");
-  messageElement.textContent = "Loading...";
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    const messageElement = document.getElementById("login-message");
+    messageElement.textContent = "Loading...";
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      console.log("Login berhasil:", userCredential.user.email);
-      messageElement.textContent = "";
-      // showView('beranda') akan dipanggil oleh Observer
-    })
-    .catch(error => {
-      console.error("Login gagal:", error.message);
-      messageElement.textContent = "Login gagal: " + error.message;
-    });
+    auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            console.log("Login berhasil:", userCredential.user.email);
+            messageElement.textContent = "";
+            // showView('beranda') akan dipanggil oleh Observer di bawah
+        })
+        .catch(error => {
+            console.error("Login gagal:", error.message);
+            messageElement.textContent = "Login gagal: Email atau Password salah.";
+        });
 }
 
 function logoutUser() {
-  auth.signOut().then(() => {
-    console.log("Logout berhasil");
-  }).catch(error => {
-    console.error("Logout gagal:", error.message);
-  });
+    auth.signOut().then(() => {
+        console.log("Logout berhasil");
+    }).catch(error => {
+        console.error("Logout gagal:", error.message);
+    });
 }
 
-// Observer Status Autentikasi (PENTING untuk menampilkan dashboard/login)
+// Observer untuk mengatur tampilan saat login/logout
 auth.onAuthStateChanged(user => {
-  const loginContainer = document.getElementById('login-container');
-  const dashboardContainer = document.getElementById('dashboard-container');
+    const loginContainer = document.getElementById('login-container');
+    const dashboardContainer = document.getElementById('dashboard-container');
 
-  if (user) {
-    if (loginContainer) loginContainer.style.display = 'none';
-    if (dashboardContainer) dashboardContainer.style.display = 'flex'; // Gunakan flex
-    console.log("User logged in:", user.email);
-    showView('beranda'); // Tampilkan halaman Beranda saat berhasil login
-  } else {
-    if (loginContainer) loginContainer.style.display = 'block';
-    if (dashboardContainer) dashboardContainer.style.display = 'none';
-    console.log("User logged out.");
-  }
+    if (user) {
+        if (loginContainer) loginContainer.style.display = 'none';
+        // Menggunakan 'block' karena container utama dashboard biasanya display: block/flex
+        if (dashboardContainer) dashboardContainer.style.display = 'block'; 
+        showView('beranda'); 
+    } else {
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (dashboardContainer) dashboardContainer.style.display = 'none';
+    }
 });
-
 
 // =================================================================
 // 3. UI & NAVIGATION
@@ -70,53 +69,53 @@ function showView(viewId) {
     // Sembunyikan semua section view
     document.querySelectorAll('.view').forEach(view => {
         view.style.display = 'none';
-		    view.classList.remove('active-view');
+        view.classList.remove('active-view');
     });
 
     // Tampilkan view yang diminta
     const targetView = document.getElementById(`${viewId}-view`);
     if (targetView) {
         targetView.style.display = 'block';
-		    targetView.classList.add('active-view');
+        targetView.classList.add('active-view');
     }
 
     // Perbarui kelas 'active' pada sidebar
-    document.querySelectorAll('#sidebar .nav-item').forEach(item => {
+    document.querySelectorAll('#sidebar a').forEach(item => {
         item.classList.remove('active');
     });
-    // Menjadikan item sidebar yang sesuai aktif
     const navItem = document.querySelector(`#sidebar a[onclick*="showView('${viewId}')"]`);
     if (navItem) {
         navItem.classList.add('active');
     }
 
-    // Panggil fungsi pemuatan data sesuai viewId:
+    // Panggil fungsi pemuatan data spesifik
     if (viewId === 'beranda') {
-        loadKondisiBarang(); // Load ringkasan
-        loadDataBarang(); // Load tabel barang
-        loadRuanganForFilter(); // Muat data ruangan ke filter
-	} else if (viewId === 'input_barang') {
-        loadRuanganForInputBarang(); // Muat data ruangan ke dropdown
-	} 
-    // Data pada view 'identitas' bersifat statis, tidak perlu fungsi load
+        loadKondisiBarang(); 
+        loadRuanganForFilter();
+        loadDataBarang(); 
+    } else if (viewId === 'input_barang') {
+        // PENTING: Memuat ruangan ke dropdown saat masuk ke view Input Barang
+        loadRuanganForInputBarang(); 
+    } 
+    // Tambahkan pemanggilan loadDataRuangan() jika Anda punya tabel daftar ruangan
 } 
 
 // =================================================================
-// 4. DATA RUANGAN (CRUD)
+// 4. DATA RUANGAN (CREATE & LOAD FOR DROPDOWN)
 // =================================================================
 
-// FUNGSI UTAMA: MENYIMPAN DATA RUANGAN DARI FORM
+// FUNGSI 4.1: MENYIMPAN DATA RUANGAN DARI FORM
 function saveDataRuangan(event) {
     event.preventDefault();
     const namaGedung = document.getElementById("nama-gedung").value;
     const luasBangunan = document.getElementById("luas-bangunan").value;
-    const jumlahLantai = document.querySelector('input[name="jumlah-lantai"]:checked').value;
+    const jumlahLantai = document.querySelector('input[name="jumlah-lantai"]:checked')?.value;
     const keteranganRuangan = document.getElementById("keterangan-ruangan").value;
 
     const ruanganData = {
         namaGedung,
-        luasBangunan: parseFloat(luasBangunan),
-        jumlahLantai: parseInt(jumlahLantai),
+        luasBangunan: parseFloat(luasBangunan || 0),
+        jumlahLantai: parseInt(jumlahLantai || 0),
         keterangan: keteranganRuangan,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -131,29 +130,30 @@ function saveDataRuangan(event) {
 
     db.collection("ruangan").add(ruanganData)
         .then(() => {
-            alert("Data Ruangan berhasil ditambahkan!");
+            alert(`Data Gedung "${namaGedung}" berhasil ditambahkan!`);
             document.getElementById("form-ruangan").reset();
         })
         .catch(error => {
             console.error("Gagal menambahkan ruangan:", error);
-            alert("Error: " + error.message);
+            alert("Error: Gagal menyimpan data ruangan.");
         });
 }
 
-// FUNGSI UTAMA: MEMUAT DATA RUANGAN KE DROPDOWN INPUT BARANG (SOLUSI MASALAH)
+// FUNGSI 4.2: MEMUAT DATA RUANGAN KE DROPDOWN INPUT BARANG (SOLUSI)
 function loadRuanganForInputBarang() {
     const ruanganSelect = document.getElementById("ruangan-select");
+    // Bersihkan dan tambahkan opsi default
     ruanganSelect.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
-    const allRooms = new Set(); // Menggunakan Set untuk memastikan nama ruangan unik
+    const allRooms = new Set(); 
 
     db.collection("ruangan").get().then(snapshot => {
-        // Loop melalui setiap dokumen (setiap gedung)
+        // Loop melalui setiap dokumen (setiap Gedung)
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Loop melalui field ruangan_1, ruangan_2, dst.
+            // Loop melalui field ruangan_1, ruangan_2, dst. yang disimpan
             for (const key in data) {
                 if (key.startsWith('ruangan_') && data[key] && data[key].trim() !== '') {
-                    allRooms.add(data[key]); // Tambahkan nama ruangan ke Set
+                    allRooms.add(data[key]); // Simpan nama ruangan unik
                 }
             }
         });
@@ -175,9 +175,10 @@ function loadRuanganForInputBarang() {
     });
 }
 
-// FUNGSI TAMBAHAN: MEMUAT RUANGAN KE DROPDOWN FILTER DI BERANDA
+// FUNGSI 4.3: MEMUAT RUANGAN KE DROPDOWN FILTER DI BERANDA
 function loadRuanganForFilter() {
     const filterSelect = document.getElementById("filter-barang");
+    if (!filterSelect) return;
     filterSelect.innerHTML = '<option value="">Semua Ruangan</option>';
     const allRooms = new Set();
 
@@ -200,160 +201,156 @@ function loadRuanganForFilter() {
     });
 }
 
-// Fungsi loadDataRuangan (Jika Anda ingin menampilkan tabel daftar ruangan di view input_ruangan)
-function loadDataRuangan() {
-    // Implementasi untuk memuat data gedung/ruangan ke tabel jika ada elemennya.
-    // Saat ini, fungsi ini hanya log
-    console.log("Fungsi loadDataRuangan dipanggil.");
-}
 
 // =================================================================
-// 5. DATA BARANG (CRUD)
+// 5. DATA BARANG (CREATE, READ, DELETE)
 // =================================================================
 
-// FUNGSI UTAMA: MENYIMPAN DATA BARANG
+// FUNGSI 5.1: MENYIMPAN DATA BARANG
 function saveDataBarang(event) {
-  event.preventDefault();
-  // Ambil nilai dari input form
-  const ruangan = document.getElementById("ruangan-select").value; 
-  const namaBarang = document.getElementById("nama-barang").value; 
-  const kondisi = document.getElementById("kondisi-barang").value; 
-  
-  // Validasi sederhana
-  if (!ruangan || ruangan === "") {
-      alert("Mohon pilih Nama Ruangan.");
-      return;
-  }
+    event.preventDefault();
+    const ruangan = document.getElementById("ruangan-select").value; 
+    const namaBarang = document.getElementById("nama-barang").value; 
+    const kondisi = document.getElementById("kondisi-barang").value; 
+    
+    if (!ruangan || ruangan === "") {
+        alert("Mohon pilih Nama Ruangan terlebih dahulu.");
+        return;
+    }
 
-  db.collection("barang").add({ 
-      ruangan, 
-      namaBarang, 
-      kondisi,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+    db.collection("barang").add({ 
+        ruangan, 
+        namaBarang, 
+        kondisi,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp() 
     })
     .then(() => {
-      alert(`Barang "${namaBarang}" berhasil ditambahkan ke ruangan "${ruangan}"!`);
-      document.getElementById("form-barang").reset();
+        alert(`Barang "${namaBarang}" berhasil ditambahkan!`);
+        document.getElementById("form-barang").reset();
     })
     .catch(error => {
-      console.error("Gagal menambahkan barang:", error);
-      alert("Error: " + error.message);
+        console.error("Gagal menambahkan barang:", error);
+        alert("Error: Gagal menyimpan data barang.");
     });
 }
 
 
-// FUNGSI UTAMA: MEMUAT RINGKASAN KONDISI BARANG DI BERANDA
+// FUNGSI 5.2: MEMUAT RINGKASAN KONDISI BARANG
 function loadKondisiBarang() {
-  const baik = document.getElementById("kondisi-baik");
-  const rr = document.getElementById("kondisi-rr");
-  const rb = document.getElementById("kondisi-rb");
-  const total = document.getElementById("kondisi-total");
+    const baik = document.getElementById("kondisi-baik");
+    const rr = document.getElementById("kondisi-rr");
+    const rb = document.getElementById("kondisi-rb");
+    const total = document.getElementById("kondisi-total");
+    const jumlahGedung = document.getElementById("jumlah-gedung");
 
-  if (!baik || !total) return; // Exit jika elemen tidak ada (misal: di halaman login) 
+    if (!baik || !total) return; 
 
-  db.collection("barang").onSnapshot(snapshot => {
-    let countBaik = 0, countRR = 0, countRB = 0, countTotal = 0;
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      countTotal++;
-      if (data.kondisi === "B") countBaik++;
-      else if (data.kondisi === "RR") countRR++;
-      else if (data.kondisi === "RB") countRB++;
+    // Ringkasan Barang
+    db.collection("barang").onSnapshot(snapshot => {
+        let countBaik = 0, countRR = 0, countRB = 0, countTotal = 0;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            countTotal++;
+            if (data.kondisi === "B") countBaik++;
+            else if (data.kondisi === "RR") countRR++;
+            else if (data.kondisi === "RB") countRB++;
+        });
+
+        baik.textContent = countBaik;
+        rr.textContent = countRR;
+        rb.textContent = countRB;
+        total.textContent = countTotal;
     });
-
-    // Update elemen HTML
-    baik.textContent = countBaik;
-    rr.textContent = countRR;
-    rb.textContent = countRB;
-    total.textContent = countTotal;
-  });
-  
-  // Update jumlah gedung (mengambil jumlah dokumen di koleksi ruangan)
-  const jumlahGedung = document.getElementById("jumlah-gedung");
-  if(jumlahGedung) {
-    db.collection("ruangan").get().then(snapshot => {
-        jumlahGedung.textContent = snapshot.size;
-    });
-  }
+    
+    // Jumlah Gedung
+    if(jumlahGedung) {
+        db.collection("ruangan").get().then(snapshot => {
+            jumlahGedung.textContent = snapshot.size;
+        });
+    }
 }
 
-// FUNGSI UTAMA: MEMUAT DATA BARANG KE TABEL BERANDA (dengan filter)
+// FUNGSI 5.3: MEMUAT DATA BARANG KE TABEL BERANDA
 function loadDataBarang() {
-  const tableBody = document.getElementById("barang-data-body");
-  if (!tableBody) return; 
-  tableBody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>';
-  
-  let query = db.collection("barang").orderBy("createdAt", "desc").limit(50); // Batasi 50 data terbaru
+    const tableBody = document.getElementById("barang-data-body");
+    if (!tableBody) return; 
+    tableBody.innerHTML = '<tr><td colspan="6">Memuat data...</td></tr>';
+    
+    const ruanganFilterValue = document.getElementById("filter-barang")?.value;
+    let query = db.collection("barang").orderBy("createdAt", "desc").limit(100);
 
-  // Terapkan filter ruangan jika ada
-  const ruanganFilterValue = document.getElementById("filter-barang")?.value;
-  if (ruanganFilterValue) {
-      query = query.where("ruangan", "==", ruanganFilterValue);
-  }
+    // Terapkan filter ruangan jika dipilih
+    if (ruanganFilterValue) {
+        query = query.where("ruangan", "==", ruanganFilterValue);
+    }
 
-  query.onSnapshot(snapshot => {
-    tableBody.innerHTML = "";
-    let i = 1;
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      // Asumsi Anda juga menyimpan merk/tipe di form, tapi karena di HTML tidak ada, 
-      // saya asumsikan merkType diambil dari data (jika ada) atau '-'
-      const merkType = data.merkType || '-'; 
-      tableBody.innerHTML += `
-        <tr>
-          <td>${i++}</td>
-          <td>${data.namaBarang || '-'}</td>
-          <td>${merkType}</td>
-          <td>${data.ruangan || '-'}</td>
-          <td>${data.kondisi || '-'}</td>
-          <td>
-            <button class="btn btn-edit" onclick="editBarang('${doc.id}')">Edit</button>
-            <button class="btn btn-delete" onclick="deleteData('${doc.id}', 'barang')">Hapus</button>
-          </td>
-        </tr>`;
+    query.onSnapshot(snapshot => {
+        tableBody.innerHTML = "";
+        let i = 1;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const merkType = data.merkType || '-'; 
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${i++}</td>
+                    <td>${data.namaBarang || '-'}</td>
+                    <td>${merkType}</td>
+                    <td>${data.ruangan || '-'}</td>
+                    <td>${data.kondisi || '-'}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="editBarang('${doc.id}')">Edit</button>
+                        <button class="btn btn-delete" onclick="deleteData('${doc.id}', 'barang')">Hapus</button>
+                    </td>
+                </tr>`;
+        });
+        if (snapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6">Tidak ada data barang.</td></tr>';
+        }
     });
-    if (snapshot.empty) {
-      tableBody.innerHTML = '<tr><td colspan="6">Tidak ada data barang.</td></tr>';
-    }
-  });
 }
 
-// FUNGSI DELETE
+// FUNGSI 5.4: DELETE DATA
 function deleteData(docId, collectionName) {
-  if (!confirm(`Apakah Anda yakin ingin menghapus data ini dari koleksi ${collectionName}?`)) return;
-  
-  db.collection(collectionName).doc(docId).delete()
-    .then(() => console.log("Data berhasil dihapus"))
-    .catch(error => console.error("Gagal hapus:", error));
+    if (!confirm(`Apakah Anda yakin ingin menghapus data ini dari koleksi ${collectionName}?`)) return;
+    
+    db.collection(collectionName).doc(docId).delete()
+        .then(() => {
+            alert("Data berhasil dihapus!");
+            // Data barang akan otomatis refresh karena menggunakan onSnapshot
+        })
+        .catch(error => console.error("Gagal hapus:", error));
 }
 
 
-// FUNGSI FILTER (Dipanggil saat tombol Tampilkan di Beranda diklik)
+// =================================================================
+// 6. UTILITY FUNCTIONS (FILTER & EDIT PLACEHOLDER)
+// =================================================================
+
+// FUNGSI 6.1: Dipanggil saat filter ruangan di Beranda diganti
 function applyFilter() {
-    loadDataBarang(); // Panggil ulang fungsi loadDataBarang yang sudah dilengkapi logika filter
+    loadDataBarang(); 
 }
 
-// FUNGSI EDIT BARANG (Placeholder)
+// FUNGSI 6.2: EDIT BARANG (Menggunakan modal yang mungkin ada di HTML Anda)
 function editBarang(docId) {
-  // Karena Anda belum memiliki Modal/Form Edit, fungsi ini hanya akan log
-  // Jika Anda menambahkan modal, letakkan logika GET dan UPDATE di sini.
-  db.collection("barang").doc(docId).get().then(doc => {
-    if (doc.exists) {
-        console.log("Data Barang untuk Edit:", doc.data());
-        alert(`Siap edit barang dengan ID: ${docId}. Silakan lengkapi Modal/Form Edit di HTML.`);
-    }
-  });
-}
+    // Fungsi ini memerlukan elemen modal/form edit di HTML Anda.
+    db.collection("barang").doc(docId).get().then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            console.log("Data Barang untuk Edit:", data);
+            
+            // Contoh implementasi: Isi data ke form modal (jika ada)
+            // document.getElementById("form-nama-barang").value = data.namaBarang;
+            // openModal('barang-edit');
 
-// FUNGSI openModal dan closeModal
-// (Dibuat sebagai placeholder jika Anda ingin menggunakan modal untuk edit/input)
-function openModal(formType) {
-    const modal = document.getElementById('modal-container');
-    if (modal) modal.style.display = 'block';
-    // Logika menampilkan form spesifik di dalam modal
+            alert(`Siap edit barang dengan ID: ${docId}. Silakan implementasikan form/modal edit di HTML.`);
+        }
+    });
 }
-
-function closeModal() {
-    const modal = document.getElementById('modal-container');
-    if (modal) modal.style.display = 'none';
+// Tambahkan fungsi openModal dan closeModal jika Anda menggunakannya
+function openModal(modalId) { 
+    document.getElementById(modalId)?.style.display = 'block';
+}
+function closeModal(modalId) {
+    document.getElementById(modalId)?.style.display = 'none';
 }
