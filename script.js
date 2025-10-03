@@ -19,7 +19,7 @@ const db = app.firestore();
 let currentBarangId = null;
 
 // =================================================================
-// 2. AUTHENTICATION & UI SWITCHING (Perbaikan Login/Register/Error)
+// 2. AUTHENTICATION & UI SWITCHING
 // =================================================================
 
 function showAuthView(view) {
@@ -28,19 +28,20 @@ function showAuthView(view) {
     const authMessage = document.getElementById('auth-message');
     const regMessage = document.getElementById('reg-message');
 
-    if (view === 'login') {
-        login.style.display = 'block';
-        register.style.display = 'none';
-        regMessage.textContent = '';
-    } else if (view === 'register') {
-        login.style.display = 'none';
-        register.style.display = 'block';
-        authMessage.textContent = '';
+    if (login && register && authMessage && regMessage) {
+        if (view === 'login') {
+            login.style.display = 'block';
+            register.style.display = 'none';
+            regMessage.textContent = '';
+        } else if (view === 'register') {
+            login.style.display = 'none';
+            register.style.display = 'block';
+            authMessage.textContent = '';
+        }
     }
 }
 
 function registerUser() {
-    // Tambahkan .trim() untuk membersihkan spasi
     const email = document.getElementById("register-email").value.trim();
     const password = document.getElementById("register-password").value.trim(); 
     const messageElement = document.getElementById("reg-message");
@@ -58,10 +59,9 @@ function registerUser() {
 
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
-            // Simpan data user ke Firestore
             db.collection("users").doc(userCredential.user.uid).set({
                 email: email,
-                role: 'guru', // Default role
+                role: 'guru',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             messageElement.textContent = "Pendaftaran berhasil! Silakan Login.";
@@ -70,7 +70,6 @@ function registerUser() {
             showAuthView('login');
         })
         .catch(error => {
-            // Penanganan error Firebase
             if (error.code === 'auth/email-already-in-use') {
                 messageElement.textContent = "Registrasi gagal: Email sudah terdaftar.";
             } else if (error.code === 'auth/invalid-email') {
@@ -82,7 +81,6 @@ function registerUser() {
 }
 
 function loginUser() {
-    // Tambahkan .trim() untuk membersihkan spasi
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value.trim();
     const messageElement = document.getElementById("auth-message");
@@ -98,7 +96,6 @@ function loginUser() {
             messageElement.textContent = ""; 
         })
         .catch(error => {
-            // Penanganan error Firebase
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 messageElement.textContent = "Login gagal: Email atau Password salah.";
             } else if (error.code === 'auth/invalid-email') {
@@ -111,7 +108,7 @@ function loginUser() {
 
 function logoutUser() {
     auth.signOut().then(() => {
-        // Observer auth.onAuthStateChanged akan menangani tampilan login
+        // Otomatis ditangani oleh auth.onAuthStateChanged
     }).catch(error => {
         console.error("Logout gagal:", error.message);
     });
@@ -119,14 +116,12 @@ function logoutUser() {
 
 auth.onAuthStateChanged(user => {
     const loginContainer = document.getElementById('login-container');
-    const registerContainer = document.getElementById('register-container');
     const dashboardContainer = document.getElementById('dashboard-container');
 
     if (user) {
         if (loginContainer) loginContainer.style.display = 'none';
-        if (registerContainer) registerContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.display = 'flex'; 
-        showView('beranda'); // Tampilkan dashboard setelah login
+        showView('beranda'); 
     } else {
         if (dashboardContainer) dashboardContainer.style.display = 'none';
         showAuthView('login');
@@ -167,17 +162,15 @@ function showView(viewId) {
         document.getElementById("form-gedung")?.reset();
         document.getElementById("form-ruangan")?.reset();
         
-        // Sembunyikan tabel referensi saat masuk ke view
         document.getElementById("gedung-data-table")?.style.display = 'none';
         document.getElementById("ruangan-data-table")?.style.display = 'none';
     }
 } 
 
 // =================================================================
-// 3. DATA RUANGAN & GEDUNG (CRUD DENGAN SORTING DAN VALIDASI PENGHAPUSAN)
+// 3. DATA RUANGAN & GEDUNG (CRUD)
 // =================================================================
 
-// SIMPAN DATA GEDUNG
 function saveDataGedung(event) {
     event.preventDefault();
     const namaGedung = document.getElementById("nama-gedung-input").value.trim();
@@ -206,7 +199,6 @@ function saveDataGedung(event) {
         });
 }
 
-// SIMPAN DATA RUANGAN
 function saveDataRuangan(event) {
     event.preventDefault();
     const namaRuangan = document.getElementById("nama-ruangan").value.trim();
@@ -226,7 +218,7 @@ function saveDataRuangan(event) {
     
     db.collection("ruangan").add(ruanganData)
         .then(() => {
-            alert(`Ruangan "${namaRuangan}" berhasil ditambahkan di Gedung ${gedungInduk}!`);
+            alert(`Ruangan "${namaRuangan}" berhasil ditambahkan!`);
             document.getElementById("form-ruangan").reset();
             loadRuanganForInputBarang(); 
             loadRuanganForFilter(); 
@@ -237,7 +229,6 @@ function saveDataRuangan(event) {
         });
 }
 
-// LOAD GEDUNG UNTUK DROPDOWN INPUT RUANGAN (Ditambahkan sorting)
 function loadGedungForDropdown() {
     const gedungSelect = document.getElementById("gedung-select");
     if (!gedungSelect) return;
@@ -255,12 +246,9 @@ function loadGedungForDropdown() {
         if (snapshot.empty) {
             gedungSelect.innerHTML += '<option value="" disabled>Tidak ada data gedung</option>';
         }
-    }).catch(error => {
-        console.error("Gagal memuat daftar gedung:", error);
     });
 }
 
-// LOAD RUANGAN UNTUK DROPDOWN INPUT BARANG (Ditambahkan sorting)
 function loadRuanganForInputBarang() {
     const ruanganSelect = document.getElementById("ruangan-select");
     if (!ruanganSelect) return;
@@ -278,13 +266,9 @@ function loadRuanganForInputBarang() {
         if (snapshot.empty) {
             ruanganSelect.innerHTML += '<option value="" disabled>Tidak ada data ruangan</option>';
         }
-        
-    }).catch(error => {
-        console.error("Gagal memuat daftar ruangan:", error);
     });
 }
 
-// LOAD RUANGAN UNTUK DROPDOWN FILTER (Ditambahkan sorting)
 function loadRuanganForFilter() {
     const filterSelect = document.getElementById("filter-barang");
     if (!filterSelect) return;
@@ -301,14 +285,12 @@ function loadRuanganForFilter() {
     });
 }
 
-// MENAMPILKAN DATA REFERENSI (GEDUNG/RUANGAN)
 function loadDataReference(collectionName) {
     const tableBody = document.getElementById(`${collectionName}-data-body`);
     const table = document.getElementById(`${collectionName}-data-table`);
     if (!tableBody || !table) return;
 
-    // Toggle tampilan tabel
-    if (table.style.display === 'none') {
+    if (table.style.display === 'none' || table.style.display === '') {
         table.style.display = 'table';
     } else {
         table.style.display = 'none';
@@ -339,21 +321,17 @@ function loadDataReference(collectionName) {
         if (snapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="3">Tidak ada data.</td></tr>';
         }
-    }).catch(error => {
-        console.error(`Gagal memuat data ${collectionName}:`, error);
-        tableBody.innerHTML = '<tr><td colspan="3">Gagal memuat data.</td></tr>';
     });
 }
 
-// MENGHAPUS DATA DENGAN VALIDASI (PENCEGAHAN KESALAHAN PENGHAPUSAN)
+// FUNGSI INI DIKOREKSI UNTUK MENGHINDARI SYNTXERROR DAHULU
 async function deleteData(docId, collectionName, referenceName) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus "${referenceName}" dari koleksi ${collectionName}? Tindakan ini TIDAK dapat dibatalkan.`)) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus "${referenceName}" dari koleksi ${collectionName}?`)) {
         return;
     }
 
     try {
         if (collectionName === 'gedung') {
-            // VALIDASI GEDUNG: Cek apakah masih ada ruangan yang terikat
             const ruanganSnapshot = await db.collection("ruangan").where("namaGedung", "==", referenceName).limit(1).get();
             if (!ruanganSnapshot.empty) {
                 alert(`Gagal menghapus Gedung "${referenceName}". Masih ada ruangan yang terikat. Hapus semua Ruangan terlebih dahulu.`);
@@ -362,7 +340,6 @@ async function deleteData(docId, collectionName, referenceName) {
         } 
         
         else if (collectionName === 'ruangan') {
-            // VALIDASI RUANGAN: Cek apakah masih ada barang di ruangan ini
             const barangSnapshot = await db.collection("barang").where("ruangan", "==", referenceName).limit(1).get();
             if (!barangSnapshot.empty) {
                 alert(`Gagal menghapus Ruangan "${referenceName}". Masih ada barang di dalamnya. Pindahkan atau Hapus semua Barang terlebih dahulu.`);
@@ -370,12 +347,10 @@ async function deleteData(docId, collectionName, referenceName) {
             }
         }
         
-        // HAPUS DATA setelah melewati validasi
         await db.collection(collectionName).doc(docId).delete();
         
         alert("Data berhasil dihapus!");
 
-        // Update UI
         if (collectionName === 'barang') {
             loadKondisiBarang(); 
             loadDataBarang();
@@ -384,16 +359,17 @@ async function deleteData(docId, collectionName, referenceName) {
             loadRuanganForInputBarang();
             loadRuanganForFilter();
             loadKondisiBarang();
-            // Panggil kembali fungsi untuk me-refresh tabel referensi yang sedang aktif
+            
+            // Periksa apakah tabel referensi sedang aktif sebelum me-load
             const table = document.getElementById(`${collectionName}-data-table`);
-            if (table && table.style.display !== 'none') {
+            if (table && table.style.display === 'table') {
                 loadDataReference(collectionName); 
             }
         }
 
     } catch (error) {
         console.error("Gagal menghapus data:", error);
-        alert("Error: Gagal menghapus data. Periksa koneksi atau konsol untuk detail.");
+        alert("Error: Gagal menghapus data. Periksa koneksi atau konsol.");
     }
 }
 
@@ -438,7 +414,6 @@ function saveDataBarang(event) {
             submitButton.textContent = 'Save';
             loadDataBarang(); 
             loadKondisiBarang();
-            showView('beranda'); // Kembali ke beranda
         })
         .catch(error => {
             console.error("Gagal update barang:", error);
@@ -463,7 +438,6 @@ function saveDataBarang(event) {
 }
 
 
-// LOAD RINGKASAN KONDISI BARANG
 function loadKondisiBarang() {
     const totalEl = document.getElementById("kondisi-total");
     const baikEl = document.getElementById("kondisi-baik");
@@ -473,7 +447,6 @@ function loadKondisiBarang() {
 
     let count = { total: 0, B: 0, RR: 0, RB: 0 };
 
-    // 1. Hitung Barang
     db.collection("barang").get().then(snapshot => {
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -487,16 +460,14 @@ function loadKondisiBarang() {
         if (baikEl) baikEl.textContent = count.B;
         if (rrEl) rrEl.textContent = count.RR;
         if (rbEl) rbEl.textContent = count.RB;
-    }).catch(error => console.error("Gagal memuat ringkasan barang:", error));
+    });
 
-    // 2. Hitung Gedung
     db.collection("gedung").get().then(snapshot => {
         if (gedungEl) gedungEl.textContent = snapshot.size;
-    }).catch(error => console.error("Gagal memuat jumlah gedung:", error));
+    });
 }
 
 
-// LOAD DATA BARANG KE TABEL BERANDA
 function loadDataBarang() {
     const tableBody = document.getElementById("barang-data-body");
     if (!tableBody) return; 
@@ -540,7 +511,6 @@ function loadDataBarang() {
 }
 
 
-// FUNGSI EDIT BARANG
 function editBarang(docId) {
     showView('input_barang');
 
@@ -556,10 +526,8 @@ function editBarang(docId) {
                 document.getElementById("merk-type").value = data.merkType || '';
                 document.getElementById("kondisi-barang").value = data.kondisi;
 
-                // Memastikan dropdown ruangan sudah terisi sebelum set value
-                // Digunakan setTimeout karena loadRuanganForInputBarang() berjalan secara async
+                // Menggunakan setTimeout untuk memastikan dropdown sudah dimuat secara async
                 setTimeout(() => {
-                    // Cek jika elemen ada sebelum set value
                     const ruanganSelect = document.getElementById("ruangan-select");
                     if (ruanganSelect) {
                         ruanganSelect.value = data.ruangan;
@@ -582,7 +550,6 @@ function editBarang(docId) {
 }
 
 
-// FUNGSI FILTER
 function applyFilter() {
     loadDataBarang(); 
 }
