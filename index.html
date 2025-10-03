@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Inventaris Ruangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
@@ -16,59 +18,89 @@
         <input type="text" id="login-email" placeholder="Email (admin@sekolah.edu)">
         <input type="password" id="login-password" placeholder="Password (admin123)">
         <button onclick="loginUser()">Login</button>
-        <p id="login-message" style="color: red;"></p>
+        <p id="login-message"></p>
     </div>
 
     <div id="dashboard-container" style="display: none;">
         <header>
             <h1>APLIKASI DAFTAR BARANG INVENTARIS RUANGAN</h1>
-            <button onclick="logoutUser()">Logout</button>
+            <button class="logout-btn" onclick="logoutUser()">Logout</button>
         </header>
         
         <div id="main-content">
             <nav id="sidebar">
-                <a href="#" class="nav-item active">Beranda</a>
+                <a href="#" class="nav-item active" onclick="showView('beranda')">Beranda</a>
                 <a href="#" class="nav-item" onclick="showView('identitas')">Identitas</a>
                 <a href="#" class="nav-item" onclick="showView('input_ruangan')">Input Data Ruangan</a>
                 <a href="#" class="nav-item" onclick="showView('input_barang')">Input Data Barang</a>
             </nav>
 
             <main id="content-area">
-                <section id="beranda-view" class="view">
-                    <h2>Beranda Inventaris</h2>
-                    <div class="kriteria-barang">
-                        <label for="filter-barang">Kondisi Barang:</label>
-                        <select id="filter-barang">
-                            <option value="">Semua Barang</option>
-                            </select>
-                        <button onclick="loadKondisiBarang()">Tampilkan</button>
+                
+                <section id="beranda-view" class="view active-view">
+                    <h2>Ringkasan Inventaris</h2>
+                    
+                    <div class="filter-actions">
+                        <div class="filter-group">
+                            <label for="filter-barang">Filter Barang Berdasarkan Ruangan:</label>
+                            <select id="filter-barang">
+                                <option value="">Semua Ruangan</option>
+                                </select>
+                            <button onclick="applyFilter()">Tampilkan</button>
+                        </div>
                     </div>
-					
-				    <div id="kondisi-barang-ringkasan" class="data-box">
-                        <p>JUMLAH GEDUNG: <span id="jumlah-gedung">0</span></p>
-                        <table>
+
+                    <div id="kondisi-barang-ringkasan" class="data-grid">
+                        <div class="card card-gedung">
+                            <p>JUMLAH GEDUNG</p> 
+                            <h3 id="jumlah-gedung">0</h3>
+                        </div>
+                        
+                        <div class="card card-baik">
+                            <p>TOTAL BARANG BAIK</p> 
+                            <h3 id="kondisi-baik">0</h3>
+                        </div>
+
+                        <div class="card card-rr">
+                            <p>TOTAL RUSAK RINGAN</p> 
+                            <h3 id="kondisi-rr">0</h3>
+                        </div>
+
+                        <div class="card card-rb">
+                            <p>TOTAL RUSAK BERAT</p> 
+                            <h3 id="kondisi-rb">0</h3>
+                        </div>
+                        
+                        <div class="card card-total">
+                            <p>TOTAL SELURUH BARANG</p>
+                            <h2 id="kondisi-total">0</h2>
+                        </div>
+                    </div>
+                    
+                    <h3>Daftar Barang Terbaru</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
                             <thead>
-                                <tr><th>BAIK</th><th>RUSAK RINGAN</th><th>RUSAK BERAT</th><th>TOTAL</th></tr>
-                            </thead>
-                            <tbody>
                                 <tr>
-                                    <td id="kondisi-baik">0</td>
-                                    <td id="kondisi-rr">0</td>
-                                    <td id="kondisi-rb">0</td>
-                                    <td id="kondisi-total">0</td>
+                                    <th>No</th>
+                                    <th>Nama Barang</th>
+                                    <th>Merk/Tipe</th>
+                                    <th>Ruangan</th>
+                                    <th>Kondisi</th>
+                                    <th>Aksi</th>
                                 </tr>
+                            </thead>
+                            <tbody id="barang-data-body">
+                                <tr><td colspan="6">Data barang akan dimuat di sini...</td></tr>
                             </tbody>
                         </table>
                     </div>
-
-                    <h3>Data Ruangan</h3>
-                    <div id="data-ruangan-list" class="data-list">
-                        </div>
                 </section>
 				
                 <section id="identitas-view" class="view" style="display: none;">
 					<h2>Data Identitas Aplikasi</h2>
-					<div class="identitas-group">
+					
+					<div class="identitas-group card">
 					<h3>Identitas Instansi</h3>
 					<p><strong>Nama Aplikasi:</strong> DAFTAR BARANG INVENTARIS RUANGAN</p>
 					<p><strong>Kementerian/Lembaga:</strong> PEMERINTAH KOTA BEKASI</p>
@@ -77,7 +109,7 @@
 					<p><strong>Alamat:</strong> Jl. Wibawa Mukti II Gg. Anugrah Rt 002/006 Kel. Jatiasih Kec. Jatiasih</p>
 					</div>
 
-					<div class="identitas-group">
+					<div class="identitas-group card">
 					<h3>Data Administrator</h3>
 					<p><strong>Nama Pengadministrasi:</strong> WAHYUDIN, S.Pd</p>
 					<p><strong>Atasan Langsung:</strong> DEWI RAHAYU, M.Pd</p>
@@ -85,62 +117,58 @@
 					</div>
 
 				</section>
-					<section id="input_ruangan-view" class="view" style="display: none;">
+				
+                <section id="input_ruangan-view" class="view" style="display: none;">
 					<h2>INPUT DATA RUANGAN</h2>
 					<form id="form-ruangan" onsubmit="saveDataRuangan(event)">
-        
-					<div class="form-group-header">
-					<label>Nomor Data:</label>
-					<input type="number" id="nomor-data-ruangan" value="1" disabled>
-					</div>
-        
-					<div class="form-group-ruangan">
-					<label for="nama-gedung">Nama Gedung:</label>
-					<input type="text" id="nama-gedung" required>
-					</div>
-        
-					<div class="form-group-ruangan">
-					<label for="luas-bangunan">Luas Bangunan (m²):</label>
-					<input type="number" id="luas-bangunan" required>
-					</div>
-        
-					<div class="form-group-ruangan">
-					<label>Jumlah Lantai:</label>
-					<div class="radio-group">
-						<input type="radio" name="jumlah-lantai" value="1" id="lantai1" checked><label for="lantai1">1</label>
-						<input type="radio" name="jumlah-lantai" value="2" id="lantai2"><label for="lantai2">2</label>
-						<input type="radio" name="jumlah-lantai" value="3" id="lantai3"><label for="lantai3">3</label>
-						<input type="radio" name="jumlah-lantai" value="4" id="lantai4"><label for="lantai4">4</label>
-						<input type="radio" name="jumlah-lantai" value="5" id="lantai5"><label for="lantai5">5</label>
-					</div>
-					</div>
+                        
+                        <div class="form-group">
+                            <label>Nomor Data:</label>
+                            <input type="number" id="nomor-data-ruangan" value="1" disabled class="disabled-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nama-gedung">Nama Gedung:</label>
+                            <input type="text" id="nama-gedung" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="luas-bangunan">Luas Bangunan (m²):</label>
+                            <input type="number" id="luas-bangunan" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Jumlah Lantai:</label>
+                            <div class="radio-group">
+                                <input type="radio" name="jumlah-lantai" value="1" id="lantai1" checked><label for="lantai1">1</label>
+                                <input type="radio" name="jumlah-lantai" value="2" id="lantai2"><label for="lantai2">2</label>
+                                <input type="radio" name="jumlah-lantai" value="3" id="lantai3"><label for="lantai3">3</label>
+                                <input type="radio" name="jumlah-lantai" value="4" id="lantai4"><label for="lantai4">4</label>
+                                <input type="radio" name="jumlah-lantai" value="5" id="lantai5"><label for="lantai5">5</label>
+                            </div>
+                        </div>
 
-					<div class="form-group-ruangan">
-						<label for="keterangan-ruangan">Keterangan:</label>
-						<textarea id="keterangan-ruangan"></textarea>
-					</div>
-        
-					<h3>Daftar Ruangan Lantai 1 (Maks. 30 Ruangan)</h3>
-					<div class="ruangan-list-container">
-					<div class="ruangan-column">
-						<label>1. Nama Ruangan:</label><input type="text" name="ruangan_1" class="nama-ruangan-input">
-						<label>2. Nama Ruangan:</label><input type="text" name="ruangan_2" class="nama-ruangan-input">
-						<label>3. Nama Ruangan:</label><input type="text" name="ruangan_3" class="nama-ruangan-input">
-					</div>
-            
-					<div class="ruangan-column">
-						<label>16. Nama Ruangan:</label><input type="text" name="ruangan_16" class="nama-ruangan-input">
-						<label>17. Nama Ruangan:</label><input type="text" name="ruangan_17" class="nama-ruangan-input">
-						<label>18. Nama Ruangan:</label><input type="text" name="ruangan_18" class="nama-ruangan-input">
-					</div>
-					</div>
-        
-					<div class="form-actions">
-					<button type="submit">Save</button>
-					<button type="reset">New</button>
-					<button type="button" onclick="closeForm()">Close</button>
-					<button type="button" onclick="editForm()">Edit</button>
-					</div>
+                        <div class="form-group">
+                            <label for="keterangan-ruangan">Keterangan:</label>
+                            <textarea id="keterangan-ruangan"></textarea>
+                        </div>
+                        
+                        <h3>Daftar Ruangan Lantai 1 (Maks. 30 Ruangan)</h3>
+                        <div class="ruangan-list-container data-grid">
+                            <div class="form-group"><label>1. Nama Ruangan:</label><input type="text" name="ruangan_1" class="nama-ruangan-input"></div>
+                            <div class="form-group"><label>2. Nama Ruangan:</label><input type="text" name="ruangan_2" class="nama-ruangan-input"></div>
+                            <div class="form-group"><label>3. Nama Ruangan:</label><input type="text" name="ruangan_3" class="nama-ruangan-input"></div>
+                            <div class="form-group"><label>4. Nama Ruangan:</label><input type="text" name="ruangan_4" class="nama-ruangan-input"></div>
+                            <div class="form-group"><label>5. Nama Ruangan:</label><input type="text" name="ruangan_5" class="nama-ruangan-input"></div>
+                            <div class="form-group"><label>6. Nama Ruangan:</label><input type="text" name="ruangan_6" class="nama-ruangan-input"></div>
+                            </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-save">Save</button>
+                            <button type="reset" class="btn btn-new">New</button>
+                            <button type="button" class="btn btn-close" onclick="closeForm()">Close</button>
+                            <button type="button" class="btn btn-edit" onclick="editForm()">Edit</button>
+                        </div>
 
 					</form>
 				</section>
@@ -148,31 +176,43 @@
                 <section id="input_barang-view" class="view" style="display: none;">
                     <h2>Input Data Barang</h2>
                     <form id="form-barang" onsubmit="saveDataBarang(event)">
-                        <div class="form-row">
-                            <label>Nama Ruangan:</label>
+                        <div class="form-group">
+                            <label for="ruangan-select">Nama Ruangan:</label>
                             <select id="ruangan-select" required>
+                                <option value="" disabled selected>Pilih Ruangan</option>
                                 </select>
                         </div>
-                        <div class="form-row">
-                            <label>Nama Barang:</label>
-                            <input type="text" id="nama-barang" required>
+                        <div class="form-group">
+                            <label for="nama-barang">Nama Barang:</label>
+                            <input type="text" id="nama-barang" required placeholder="Contoh: Meja Guru">
                         </div>
-                        <div class="form-row">
-                            <label>Kondisi:</label>
+                        <div class="form-group">
+                            <label for="kondisi-barang">Kondisi:</label>
                             <select id="kondisi-barang" required>
                                 <option value="B">Baik</option>
                                 <option value="RR">Rusak Ringan</option>
                                 <option value="RB">Rusak Berat</option>
                             </select>
                         </div>
-                        <button type="submit">Save</button>
-                        <button type="reset">New</button>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-save">Save</button>
+                            <button type="reset" class="btn btn-new">New</button>
+                        </div>
                     </form>
                 </section>
                 
                 </main>
         </div>
     </div>
+    
+    <div id="modal-container" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-barang" class="modal-form">
+                </div>
+        </div>
+    </div>
+
 
     <script src="script.js"></script>
 </body>
