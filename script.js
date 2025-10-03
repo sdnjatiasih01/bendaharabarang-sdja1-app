@@ -324,7 +324,6 @@ function loadDataReference(collectionName) {
     });
 }
 
-// FUNGSI INI DIKOREKSI UNTUK MENGHINDARI SYNTXERROR DAHULU
 async function deleteData(docId, collectionName, referenceName) {
     if (!confirm(`Apakah Anda yakin ingin menghapus "${referenceName}" dari koleksi ${collectionName}?`)) {
         return;
@@ -360,7 +359,6 @@ async function deleteData(docId, collectionName, referenceName) {
             loadRuanganForFilter();
             loadKondisiBarang();
             
-            // Periksa apakah tabel referensi sedang aktif sebelum me-load
             const table = document.getElementById(`${collectionName}-data-table`);
             if (table && table.style.display === 'table') {
                 loadDataReference(collectionName); 
