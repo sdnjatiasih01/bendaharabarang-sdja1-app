@@ -1,62 +1,82 @@
-/* GLOBAL STYLES & FONT */
-body {
-    font-family: 'Poppins', sans-serif; /* Font modern */
+/* =================================================================
+   1. GLOBAL & FONT SETUP
+   ================================================================= */
+:root {
+    --primary-color: #007bff; /* Biru terang */
+    --primary-hover: #0056b3;
+    --background-light: #f4f6f9; /* Latar belakang lembut */
+    --card-background: #ffffff;
+    --text-dark: #344759;
+    --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background: #f4f6f9; /* Warna latar belakang lembut */
-    color: #344759;
 }
 
-/* LOGIN CONTAINER - Desain Modern */
-#login-container {
-    max-width: 400px;
-    margin: 120px auto;
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--background-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* =================================================================
+   2. AUTHENTICATION (LOGIN/REGISTER)
+   ================================================================= */
+#login-container, #register-container {
+    max-width: 450px;
+    margin: 100px auto;
     padding: 40px;
-    background: #ffffff;
-    border-radius: 12px;
+    background: var(--card-background);
+    border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     text-align: center;
+    transition: all 0.5s ease-in-out;
 }
 
-#login-container h2 {
-    color: #007bff;
-    margin-bottom: 30px;
+#login-container h2, #register-container h2 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
     font-weight: 600;
 }
 
-#login-container input {
+#login-container input, #register-container input {
     width: 100%;
-    padding: 12px;
+    padding: 12px 15px;
     margin: 10px 0;
     border: 1px solid #ced4da;
     border-radius: 8px;
-    box-sizing: border-box;
     transition: border-color 0.3s;
 }
 
-#login-container button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 8px;
-    background: #007bff;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
+#login-container input:focus, #register-container input:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
-#login-container button:hover {
-    background: #0056b3;
+.error-message {
+    color: #dc3545;
+    margin-top: 10px;
+    font-weight: 500;
 }
 
-#login-message {
-    color: #dc3545; /* Merah untuk pesan error */
+/* Link di container Auth */
+#login-container a, #register-container a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
 }
 
-/* DASHBOARD LAYOUT */
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* =================================================================
+   3. DASHBOARD LAYOUT
+   ================================================================= */
 #dashboard-container {
     display: flex;
     flex-direction: column;
@@ -64,180 +84,121 @@ body {
 }
 
 header {
-    background: #343a40;
+    background: var(--primary-color);
     color: white;
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 header h1 {
-    font-size: 1.5em;
-    margin: 0;
+    font-size: 1.2rem;
     font-weight: 400;
 }
 
-/* SIDEBAR (NAVIGASI) */
 #main-content {
     display: flex;
-    flex: 1; /* Mengisi sisa ruang */
+    flex: 1; /* Konten utama mengisi sisa ruang */
 }
 
+/* Sidebar */
 #sidebar {
     width: 250px;
-    background: #ffffff;
+    background: var(--card-background);
     padding: 20px 0;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    flex-shrink: 0; /* Jangan menyusut */
 }
 
 #sidebar .nav-item {
     display: block;
-    padding: 12px 20px;
+    padding: 12px 25px;
+    color: var(--text-dark);
     text-decoration: none;
-    color: #495057;
-    transition: background 0.2s, color 0.2s;
-    border-left: 5px solid transparent;
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+#sidebar .nav-item:hover {
+    background: #e9ecef;
 }
 
 #sidebar .nav-item.active {
-    background: #e1f0ff; 
-    color: #007bff;
-    border-left: 5px solid #007bff; 
-    font-weight: 600;
+    background: var(--primary-color);
+    color: white;
+    border-left: 4px solid #28a745; /* Aksen hijau untuk aktif */
 }
 
-/* CONTENT AREA */
+/* Main Content Area */
 #content-area {
-    flex: 1;
+    flex-grow: 1;
     padding: 30px;
-    background: #f4f6f9;
+    overflow-y: auto;
 }
 
-#content-area h2 {
-    color: #344759;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-    margin-bottom: 30px;
-    font-weight: 600;
-}
-
-/* DATA CARD (Grid di Beranda) */
-.data-grid {
-    display: grid;
-    /* Membuat grid responsif, min lebar 220px per kolom */
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    text-align: center;
-    border-left: 5px solid transparent;
-}
-
-.card-gedung { border-left-color: #ffc107; }
-.card-baik { border-left-color: #28a745; }
-.card-rr { border-left-color: #fd7e14; }
-.card-rb { border-left-color: #dc3545; }
-
-.card p {
-    margin: 0;
-    font-size: 0.9em;
-    color: #6c757d;
-}
-
-.card h3, .card h2 {
-    margin: 8px 0 0;
-    font-size: 2em;
-    color: #344759;
-    font-weight: 700;
-}
-
-.card-total {
-    background: #007bff;
-    color: white;
-    grid-column: 1 / -1; /* Mengambil lebar penuh di desktop */
-    border-left: 5px solid #0056b3;
-}
-.card-total h2, .card-total p {
-    color: white;
-}
-
-/* TABLE STYLING */
-.table-responsive {
-    overflow-x: auto; 
-}
-
-.data-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-top: 15px; 
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.data-table th, .data-table td { 
-    padding: 12px 15px; 
-    text-align: left; 
-    border-bottom: 1px solid #dee2e6;
-}
-
-.data-table th {
-    background-color: #e9ecef;
-    color: #344759;
-    font-weight: 600;
-}
-
-/* FORM STYLING */
-#content-area form {
-    max-width: 800px;
-    padding: 25px;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    background: #ffffff;
-}
-
-.form-group {
+.view {
+    background: var(--card-background);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-base);
     margin-bottom: 20px;
 }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
+.view h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
 }
 
-input[type="text"], input[type="number"], select, textarea {
+/* =================================================================
+   4. FORM ELEMENTS
+   ================================================================= */
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+#form-ruangan input, 
+#form-barang input,
+#form-barang select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #ced4da;
     border-radius: 5px;
-    box-sizing: border-box;
+    transition: border-color 0.3s;
 }
 
-.disabled-input {
-    background-color: #e9ecef;
+#form-ruangan input:focus, 
+#form-barang input:focus,
+#form-barang select:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
+/* Radio Group (untuk Jumlah Lantai) */
 .radio-group {
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    margin-top: 10px;
 }
 
-/* FORM ACTION BUTTONS */
-.form-actions {
-    margin-top: 30px;
-    display: flex;
-    gap: 10px;
+.radio-group label {
+    font-weight: 400;
 }
 
+/* =================================================================
+   5. BUTTONS
+   ================================================================= */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -245,25 +206,159 @@ input[type="text"], input[type="number"], select, textarea {
     cursor: pointer;
     font-weight: 600;
     color: white;
+    transition: background 0.3s;
+}
+
+/* Tombol Aksi Form */
+button[type="submit"], 
+#login-container button, 
+#register-container button {
+    background: var(--primary-color);
+}
+
+button[type="submit"]:hover, 
+#login-container button:hover,
+#register-container button:hover {
+    background: var(--primary-hover);
 }
 
 .btn-save { background: #28a745; }
 .btn-new { background: #6c757d; }
-.btn-close { background: #007bff; }
-.btn-edit { background: #ffc107; color: #344759; }
+.btn-edit { background: #ffc107; color: var(--text-dark); }
+.btn-delete { background: #dc3545; }
 .logout-btn { background: #dc3545; }
 
+.btn-save:hover { background: #218838; }
+.btn-edit:hover { background: #e0a800; }
+.btn-delete:hover { background: #c82333; }
+.logout-btn:hover { background: #c82333; }
 
-/* RESPONSIVITAS MOBILE (768px ke bawah) */
-@media (max-width: 768px) {
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+}
+
+/* =================================================================
+   6. TABLE & DATA SECTION
+   ================================================================= */
+.data-section {
+    margin-top: 30px;
+}
+
+.data-section h3 {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.filter-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.filter-section select {
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate; /* Gunakan separate untuk border-radius */
+    border-spacing: 0;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden; /* Penting untuk menjaga border-radius */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.data-table th, .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.data-table td button {
+    margin: 0 3px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+/* =================================================================
+   7. RINGKASAN DATA (SUMMARY CARDS)
+   ================================================================= */
+#summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: var(--card-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-base);
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h4 {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.card p {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Warna spesifik untuk kondisi */
+.card-baik p { color: #28a745; }
+.card-rr p { color: #ffc107; }
+.card-rb p { color: #dc3545; }
+
+/* =================================================================
+   8. RESPONSIVE DESIGN (Mobile First)
+   ================================================================= */
+
+/* Untuk layar tablet dan desktop kecil (lebar 992px ke bawah) */
+@media (max-width: 992px) {
     #main-content {
-        flex-direction: column; /* Dashboard menjadi vertikal */
+        flex-direction: column; /* Sidebar di atas konten utama */
     }
 
     #sidebar {
         width: 100%; 
         padding: 0;
-        
         /* Navigasi Horizontal Mobile */
         display: flex;
         overflow-x: auto;
@@ -274,30 +369,56 @@ input[type="text"], input[type="number"], select, textarea {
     #sidebar .nav-item {
         flex: 1 0 auto;
         border-left: none;
-        border-bottom: 3px solid transparent;
         text-align: center;
-        padding: 10px 15px;
+        border-bottom: 4px solid transparent;
+        padding: 15px 10px;
     }
-    
+
     #sidebar .nav-item.active {
         border-left: none;
-        border-bottom: 3px solid #007bff;
+        border-bottom: 4px solid #28a745;
     }
-    
+
     #content-area {
-        padding: 15px;
+        padding: 20px;
     }
-    
+}
+
+/* Untuk layar HP (lebar 600px ke bawah) */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
     header h1 {
-        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    #login-container, #register-container {
+        margin: 50px 20px;
+        padding: 30px;
     }
     
-    .card-total {
-        grid-column: auto; /* Membatalkan span penuh jika hanya 1 kolom */
+    #summary-cards {
+        grid-template-columns: 1fr; /* Satu kolom di HP */
+    }
+
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-section select, .filter-section button {
+        width: 100%;
+        margin-top: 10px;
     }
     
-    /* Mengurangi padding form */
-    #content-area form {
-        padding: 15px;
+    /* Membuat tabel dapat di-scroll secara horizontal */
+    .data-section {
+        overflow-x: auto;
+    }
+    .data-table {
+        min-width: 600px; /* Lebar minimum agar tidak terlalu sempit */
     }
 }
