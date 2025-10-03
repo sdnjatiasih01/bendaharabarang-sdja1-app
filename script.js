@@ -33,7 +33,7 @@ function logoutUser() {
   auth.signOut().then(() => {
     console.log("Logout berhasil");
     document.getElementById("login-container").style.display = "block";
-    document.getElementById("dashboard-container").style.display = "none";
+    document.getElementById("dashboardContainer").style.display = "none";
   }).catch(error => {
     console.error("Logout gagal:", error.message);
   });
@@ -114,7 +114,7 @@ else if (viewId === 'referensi') {
         // Fungsi untuk memuat data identitas (Jika Anda punya form/tabelnya)
         loadIdentitas();
     }
-	}
+	
 	
     // ... tambahkan untuk 'identitas', 'ruangan', 'barang', dll.
 }
@@ -238,15 +238,15 @@ function loadPenanggungJawabTable() {
 // Observer
 auth.onAuthStateChanged(user => {
   const loginContainer = document.getElementById('login-container');
-  const dashboard-container = document.getElementById('dashboard-container');
+  const dashboardContainer = document.getElementById('dashboardContainer');
   if (user) {
     loginContainer.style.display = 'none';
-    dashboard-container.style.display = 'block';
+    dashboardContainer.style.display = 'block';
     console.log("User logged in:", user.email);
     showView('beranda');
   } else {
     loginContainer.style.display = 'block';
-    dashboard-container.style.display = 'none';
+    dashboardContainer.style.display = 'none';
     console.log("User logged out.");
   }
 });
@@ -290,7 +290,7 @@ function applyFilter() {
     }
   });
 }
-function editBarang(docId) {
+function editBarang(docId) 
   db.collection("barang").doc(docId).get().then(doc => {
     if (doc.exists) {
       const data = doc.data();
@@ -320,4 +320,3 @@ function editBarang(docId) {
       };
     }
   });
-}
