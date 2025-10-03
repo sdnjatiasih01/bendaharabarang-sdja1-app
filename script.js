@@ -40,22 +40,34 @@ function logoutUser() {
 }
 
 // Tambahkan Event Listener untuk tombol navigasi
-document.addEventListener('DOMContentLoaded', () => {
-    // Logika ini akan berjalan setelah seluruh HTML dimuat
-    const navButtons = document.querySelectorAll('#top-nav .nav-btn');
-    navButtons.forEach(button => {
-        button.addEventListener('click', (event) => {
-            // Hapus kelas 'active' dari semua tombol
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // Tambahkan kelas 'active' ke tombol yang baru diklik
-            event.target.classList.add('active');
-            
-            // Tampilkan view yang sesuai
-            const viewId = event.target.getAttribute('data-view');
-            showView(viewId);
-        });
+function showView(viewId) {
+    // Sembunyikan semua section view
+    document.querySelectorAll('.view').forEach(view => {
+        view.style.display = 'none';
     });
+
+    // Tampilkan view yang diminta
+    const targetView = document.getElementById(`${viewId}-view`);
+    if (targetView) {
+        targetView.style.display = 'block';
+    }
+
+    // Perbarui kelas 'active' pada sidebar
+    document.querySelectorAll('#sidebar .nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Cari elemen navigasi yang sesuai dengan viewId dan tambahkan kelas 'active'
+    // Logika ini mungkin perlu lebih spesifik jika Anda ingin membuat item aktif.
+    // Untuk saat ini, kita biarkan saja penanganan .active di HTML.
+    
+    // Panggil fungsi pemuatan data sesuai viewId:
+    if (viewId === 'beranda') {
+        loadKondisiBarang(); // Hanya panggil yang relevan
+        // loadDataRuanganList(); // Tambahkan jika Anda memiliki fungsi ini untuk beranda
+    }
+    // Tambahkan view-view lain jika mereka memerlukan pemuatan data spesifik saat dibuka
+}
 });
 
 // Pastikan fungsi showView() Anda sudah memuat data yang relevan
@@ -213,15 +225,15 @@ function loadPenanggungJawabTable() {
 // Observer
 auth.onAuthStateChanged(user => {
   const loginContainer = document.getElementById('login-container');
-  const appContainer = document.getElementById('app-container');
+  const dashboard-container = document.getElementById('app-container');
   if (user) {
     loginContainer.style.display = 'none';
-    appContainer.style.display = 'block';
+    dashboard-container.style.display = 'block';
     console.log("User logged in:", user.email);
     showView('beranda');
   } else {
     loginContainer.style.display = 'block';
-    appContainer.style.display = 'none';
+    dashboard-container.style.display = 'none';
     console.log("User logged out.");
   }
 });
