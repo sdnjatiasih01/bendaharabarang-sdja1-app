@@ -170,9 +170,9 @@ function showView(viewId) {
 // =================================================================
 // 3. DATA RUANGAN & GEDUNG (CRUD)
 // =================================================================
-// (lanjut sesuai file Anda, tanpa perubahan besar)
+// (lanjut sesuai file Anda)
 
 // =================================================================
 // 4. DATA BARANG (CRUD)
 // =================================================================
-// (lanjut sesuai file Anda, tanpa perubahan besar)
+// (lanjut sesuai file Anda)
