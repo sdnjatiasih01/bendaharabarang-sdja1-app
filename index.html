@@ -1,196 +1,190 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Inventaris Ruangan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Inventaris Sekolah</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  
+  <!-- LOGIN -->
+  <div id="login-container">
+    <h2>Login</h2>
+    <input type="text" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="loginUser()">Login</button>
+    <p>Belum punya akun? <a href="#" onclick="showAuthView('register')">Daftar</a></p>
+    <p id="auth-message" class="error-message"></p>
+  </div>
 
-    <div id="login-container">
-        <h2>Login Aplikasi</h2>
-        <input type="text" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="loginUser()">Login</button>
-        <p class="mt-10">Belum punya akun? <a href="#" onclick="showAuthView('register')">Daftar di sini</a></p>
-        <p id="auth-message" class="error-message"></p>
+  <!-- REGISTER -->
+  <div id="register-container" style="display:none;">
+    <h2>Daftar Akun</h2>
+    <input type="text" id="register-email" placeholder="Email">
+    <input type="password" id="register-password" placeholder="Password">
+    <button onclick="registerUser()">Daftar</button>
+    <p>Sudah punya akun? <a href="#" onclick="showAuthView('login')">Login</a></p>
+    <p id="reg-message" class="error-message"></p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard-container" style="display:none;">
+    <header>
+      <h1>Inventaris Sekolah</h1>
+      <div>
+        <button onclick="printLaporan()">Cetak Laporan</button>
+        <button class="logout-btn" onclick="logoutUser()">Logout</button>
+      </div>
+    </header>
+    <div id="main-content">
+      <nav id="sidebar">
+        <a href="#" class="nav-item" onclick="showView('beranda')">Beranda</a>
+        <a href="#" class="nav-item" onclick="showView('gedung')">Data Gedung</a>
+        <a href="#" class="nav-item" onclick="showView('ruangan')">Data Ruangan</a>
+        <a href="#" class="nav-item" onclick="showView('barang')">Data Barang</a>
+        <a href="#" class="nav-item" onclick="showView('identitas')">Identitas</a>
+        <a href="#" class="nav-item" onclick="showView('laporan')">Laporan</a>
+      </nav>
+      <main id="content-area">
+
+        <!-- Dashboard -->
+        <section id="beranda-view" class="view">
+          <h2>Dashboard</h2>
+          <div class="card-container">
+            <div class="card"><h4>Total</h4><p id="total-barang">0</p></div>
+            <div class="card card-baik"><h4>Baik</h4><p id="total-baik">0</p></div>
+            <div class="card card-rr"><h4>Rusak Ringan</h4><p id="total-rr">0</p></div>
+            <div class="card card-rb"><h4>Rusak Berat</h4><p id="total-rb">0</p></div>
+          </div>
+
+          <div>
+            <label>Pilih Ruangan:</label>
+            <select id="filter-ruangan" onchange="updateDashboardRuangan()"></select>
+          </div>
+          <div class="chart-box">
+            <canvas id="chartRuangan"></canvas>
+          </div>
+
+          <h3>Daftar Barang di Ruangan</h3>
+          <table class="data-table">
+            <thead>
+              <tr><th>No</th><th>Nama Barang</th><th>Merk/Tipe</th><th>Jumlah</th><th>Kondisi</th></tr>
+            </thead>
+            <tbody id="dashboard-barang-body"></tbody>
+          </table>
+        </section>
+
+        <!-- Gedung -->
+        <section id="gedung-view" class="view" style="display:none;">
+          <h2>Data Gedung</h2>
+          <form onsubmit="saveGedung(event)">
+            <input type="text" id="nama-gedung" placeholder="Nama Gedung" required>
+            <input type="text" id="luas-gedung" placeholder="Luas Gedung">
+            <input type="number" id="tahun-gedung" placeholder="Tahun">
+            <input type="text" id="sumber-gedung" placeholder="Sumber Anggaran">
+            <button type="submit">Tambah</button>
+          </form>
+          <table class="data-table">
+            <thead><tr><th>No</th><th>Nama Gedung</th><th>Luas</th><th>Tahun</th><th>Sumber</th><th>Aksi</th></tr></thead>
+            <tbody id="gedung-body"></tbody>
+          </table>
+        </section>
+
+        <!-- Ruangan -->
+        <section id="ruangan-view" class="view" style="display:none;">
+          <h2>Data Ruangan</h2>
+          <form onsubmit="saveRuangan(event)">
+            <input type="text" id="nama-ruangan" placeholder="Nama Ruangan" required>
+            <select id="gedung-select" required></select>
+            <input type="text" id="penanggung-ruangan" placeholder="Penanggung Jawab">
+            <button type="submit">Tambah</button>
+          </form>
+          <table class="data-table">
+            <thead><tr><th>No</th><th>Nama Ruangan</th><th>Gedung</th><th>Penanggung Jawab</th><th>Aksi</th></tr></thead>
+            <tbody id="ruangan-body"></tbody>
+          </table>
+        </section>
+
+        <!-- Barang -->
+        <section id="barang-view" class="view" style="display:none;">
+          <h2>Data Barang</h2>
+          <form onsubmit="saveBarang(event)">
+            <input type="text" id="nama-barang" placeholder="Nama Barang" required>
+            <input type="text" id="merk-barang" placeholder="Merk/Tipe">
+            <input type="number" id="jumlah-barang" placeholder="Jumlah" required>
+            <select id="ruangan-select" required></select>
+            <select id="kondisi-barang" required>
+              <option value="B">Baik</option>
+              <option value="RR">Rusak Ringan</option>
+              <option value="RB">Rusak Berat</option>
+            </select>
+            <button type="submit">Tambah</button>
+          </form>
+          <table class="data-table">
+            <thead><tr><th>No</th><th>Nama</th><th>Merk</th><th>Jumlah</th><th>Ruangan</th><th>Kondisi</th><th>Aksi</th></tr></thead>
+            <tbody id="barang-body"></tbody>
+          </table>
+        </section>
+
+        <!-- Identitas -->
+        <section id="identitas-view" class="view" style="display:none;">
+          <h2>Identitas Sekolah</h2>
+          <form onsubmit="saveIdentitas(event)">
+            <input type="text" id="nama-sekolah" placeholder="Nama Sekolah">
+            <input type="text" id="alamat-sekolah" placeholder="Alamat Sekolah">
+            <input type="file" id="logo-sekolah">
+            <input type="text" id="bendahara-nama" placeholder="Nama Bendahara Barang">
+            <input type="text" id="bendahara-nip" placeholder="NIP Bendahara Barang">
+            <input type="text" id="pj-nama" placeholder="Nama Penanggung Jawab Ruangan">
+            <input type="text" id="pj-nip" placeholder="NIP Penanggung Jawab Ruangan">
+            <button type="submit">Simpan</button>
+          </form>
+        </section>
+
+        <!-- Laporan -->
+        <section id="laporan-view" class="view" style="display:none;">
+          <div id="laporan-container">
+            <div class="kop-laporan">
+              <img id="logo-preview" src="" alt="Logo Sekolah" height="80">
+              <div>
+                <h3 id="lap-nama-sekolah">Nama Sekolah</h3>
+                <p id="lap-alamat-sekolah">Alamat Sekolah</p>
+              </div>
+            </div>
+            <h3 class="laporan-header">Laporan Inventaris</h3>
+            <p>Tanggal Cetak: <span id="tanggal-cetak"></span></p>
+            <table class="data-table">
+              <thead><tr><th>No</th><th>Nama Barang</th><th>Merk/Tipe</th><th>Jumlah</th><th>Kondisi</th></tr></thead>
+              <tbody id="laporan-body"></tbody>
+            </table>
+            <div class="ttd">
+              <div>
+                <p>Bendahara Barang</p><br><br>
+                <p id="lap-bendahara-nama"></p>
+                <p id="lap-bendahara-nip"></p>
+              </div>
+              <div>
+                <p>Penanggung Jawab</p><br><br>
+                <p id="lap-pj-nama"></p>
+                <p id="lap-pj-nip"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
+  </div>
 
-    <div id="register-container" style="display: none;">
-        <h2>Daftar Akun Guru</h2>
-        <input type="text" id="register-email" placeholder="Email">
-        <input type="password" id="register-password" placeholder="Password (minimal 6 karakter)">
-        <button onclick="registerUser()">Daftar</button>
-        <p class="mt-10">Sudah punya akun? <a href="#" onclick="showAuthView('login')">Login di sini</a></p>
-        <p id="reg-message" class="error-message"></p>
-    </div>
-
-    <div id="dashboard-container" style="display: none;">
-        <header>
-            <h1>APLIKASI DAFTAR BARANG INVENTARIS RUANGAN</h1>
-            <button class="logout-btn" onclick="logoutUser()">Logout</button>
-        </header>
-        
-        <div id="main-content">
-            <nav id="sidebar">
-                <a href="#" class="nav-item" onclick="showView('beranda')">Beranda</a>
-                <a href="#" class="nav-item" onclick="showView('input_ruangan')">Input Data Ruangan</a>
-                <a href="#" class="nav-item" onclick="showView('input_barang')">Input Data Barang</a>
-                <a href="#" class="nav-item" onclick="showView('referensi')">Referensi</a>
-                <a href="#" class="nav-item" onclick="showView('identitas')">Identitas</a>
-            </nav>
-
-            <main id="content-area">
-                
-                <section id="beranda-view" class="view" style="display: none;">
-                    <h2>Dashboard</h2>
-                    <div id="summary-cards">
-                        <div class="card">
-                            <h4>Total Barang</h4>
-                            <p id="kondisi-total">0</p>
-                        </div>
-                        <div class="card card-baik">
-                            <h4>Kondisi Baik (B)</h4>
-                            <p id="kondisi-baik">0</p>
-                        </div>
-                        <div class="card card-rr">
-                            <h4>Rusak Ringan (RR)</h4>
-                            <p id="kondisi-rr">0</p>
-                        </div>
-                        <div class="card card-rb">
-                            <h4>Rusak Berat (RB)</h4>
-                            <p id="kondisi-rb">0</p>
-                        </div>
-                        <div class="card">
-                            <h4>Jumlah Gedung</h4>
-                            <p id="jumlah-gedung">0</p>
-                        </div>
-                    </div>
-                    
-                    <div class="data-section">
-                        <h3>Daftar Barang Terbaru</h3>
-                        <div class="filter-section">
-                            <label for="filter-barang">Filter Ruangan:</label>
-                            <select id="filter-barang" onchange="applyFilter()"></select>
-                            <button onclick="applyFilter()">Tampilkan</button>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama Barang</th>
-                                    <th>Merk/Tipe</th>
-                                    <th>Nama Ruangan</th>
-                                    <th>Kondisi</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="barang-data-body">
-                                <tr><td colspan="6">Silakan login untuk memuat data.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section id="input_ruangan-view" class="view" style="display: none;">
-                    <h2>Input Data Ruangan & Gedung</h2>
-                    
-                    <div class="data-section">
-                        <h3>1. Input Nama Gedung Baru</h3>
-                        <form id="form-gedung" onsubmit="saveDataGedung(event)">
-                            <div class="form-row">
-                                <label>Nama Gedung Baru:</label>
-                                <input type="text" id="nama-gedung-input" required>
-                                <button type="submit" class="btn-save">Simpan Gedung</button>
-                            </div>
-                        </form>
-                        <p style="margin-top: 10px;">
-                            Daftar Gedung (Hapus dengan risiko jika tidak ada Ruangan di dalamnya):
-                            <button class="btn btn-show-data" onclick="loadDataReference('gedung')">Tampilkan Data Gedung</button>
-                        </p>
-                        <table id="gedung-data-table" class="data-table" style="margin-top: 10px; display:none;">
-                            <thead><tr><th>Nama Gedung</th><th>Aksi</th></tr></thead>
-                            <tbody id="gedung-data-body"></tbody>
-                        </table>
-                    </div>
-
-                    <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
-
-                    <div class="data-section">
-                        <h3>2. Input Nama Ruangan Baru</h3>
-                        <form id="form-ruangan" onsubmit="saveDataRuangan(event)">
-                            
-                            <div class="form-row">
-                                <label>Nama Ruangan:</label>
-                                <input type="text" id="nama-ruangan" required>
-                            </div>
-
-                            <div class="form-row">
-                                <label>Pilih Gedung Induk:</label>
-                                <select id="gedung-select" required>
-                                    <option value="" disabled selected>Pilih Gedung</option>
-                                </select>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn-save">Simpan Ruangan</button>
-                            </div>
-                        </form>
-                        <p style="margin-top: 10px;">
-                            Daftar Ruangan (Hapus dengan risiko jika tidak ada Barang di dalamnya):
-                            <button class="btn btn-show-data" onclick="loadDataReference('ruangan')">Tampilkan Data Ruangan</button>
-                        </p>
-                        <table id="ruangan-data-table" class="data-table" style="margin-top: 10px; display:none;">
-                            <thead><tr><th>Nama Ruangan</th><th>Nama Gedung</th><th>Aksi</th></tr></thead>
-                            <tbody id="ruangan-data-body"></tbody>
-                        </table>
-                    </div>
-
-                </section>
-                
-                <section id="input_barang-view" class="view" style="display: none;">
-                    <h2>Input Data Barang</h2>
-                    <form id="form-barang" onsubmit="saveDataBarang(event)">
-                        <div class="form-row">
-                            <label>Nama Ruangan:</label>
-                            <select id="ruangan-select" required></select>
-                        </div>
-                        <div class="form-row">
-                            <label>Nama Barang:</label>
-                            <input type="text" id="nama-barang" required>
-                        </div>
-                        <div class="form-row">
-                            <label>Merk/Tipe:</label>
-                            <input type="text" id="merk-type">
-                        </div>
-                        <div class="form-row">
-                            <label>Kondisi:</label>
-                            <select id="kondisi-barang" required>
-                                <option value="B">Baik</option>
-                                <option value="RR">Rusak Ringan</option>
-                                <option value="RB">Rusak Berat</option>
-                            </select>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn-save">Save</button>
-                            <button type="reset" class="btn btn-new">New</button>
-                        </div>
-                    </form>
-                </section>
-                
-                <section id="referensi-view" class="view" style="display: none;"><h2>Data Referensi</h2></section>
-                <section id="identitas-view" class="view" style="display: none;"><h2>Identitas Sekolah</h2></section>
-
-            </main>
-        </div>
-    </div>
-    
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
