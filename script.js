@@ -19,7 +19,7 @@ const db = app.firestore();
 let currentBarangId = null;
 
 // =================================================================
-// 2. AUTHENTICATION & UI SWITCHING (REVISI TOTAL LOGIN/REGISTER)
+// 2. AUTHENTICATION & UI SWITCHING (Perbaikan Login/Register/Error)
 // =================================================================
 
 function showAuthView(view) {
@@ -40,7 +40,7 @@ function showAuthView(view) {
 }
 
 function registerUser() {
-    // Gunakan .trim() untuk membersihkan spasi
+    // Tambahkan .trim() untuk membersihkan spasi
     const email = document.getElementById("register-email").value.trim();
     const password = document.getElementById("register-password").value.trim(); 
     const messageElement = document.getElementById("reg-message");
@@ -58,7 +58,6 @@ function registerUser() {
 
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
-            // Simpan data user ke Firestore
             db.collection("users").doc(userCredential.user.uid).set({
                 email: email,
                 role: 'guru',
@@ -70,7 +69,7 @@ function registerUser() {
             showAuthView('login');
         })
         .catch(error => {
-            // Penanganan error Firebase yang lebih detail untuk GAGAL LOGIN
+            // Penanganan error Firebase yang lebih detail
             if (error.code === 'auth/email-already-in-use') {
                 messageElement.textContent = "Registrasi gagal: Email sudah terdaftar.";
             } else if (error.code === 'auth/invalid-email') {
@@ -82,7 +81,7 @@ function registerUser() {
 }
 
 function loginUser() {
-    // Gunakan .trim() untuk membersihkan spasi
+    // Tambahkan .trim() untuk membersihkan spasi
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value.trim();
     const messageElement = document.getElementById("auth-message");
@@ -98,7 +97,7 @@ function loginUser() {
             messageElement.textContent = ""; 
         })
         .catch(error => {
-            // Penanganan error Firebase yang lebih detail untuk GAGAL LOGIN
+            // Penanganan error Firebase yang lebih detail
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 messageElement.textContent = "Login gagal: Email atau Password salah.";
             } else if (error.code === 'auth/invalid-email') {
@@ -126,7 +125,7 @@ auth.onAuthStateChanged(user => {
         if (loginContainer) loginContainer.style.display = 'none';
         if (registerContainer) registerContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.display = 'flex'; 
-        showView('beranda'); // Panggil showView setelah login berhasil
+        showView('beranda'); 
     } else {
         if (dashboardContainer) dashboardContainer.style.display = 'none';
         showAuthView('login');
@@ -159,8 +158,7 @@ function showView(viewId) {
         loadDataBarang(); 
     } else if (viewId === 'input_barang') {
         loadRuanganForInputBarang(); 
-        // Reset form barang
-        document.getElementById("form-barang").reset();
+        document.getElementById("form-barang")?.reset();
         document.querySelector('#form-barang button[type="submit"]').textContent = 'Save';
         currentBarangId = null;
     } else if (viewId === 'input_ruangan') {
@@ -357,7 +355,7 @@ async function deleteData(docId, collectionName, referenceName) {
             // VALIDASI GEDUNG: Cek apakah masih ada ruangan yang terikat
             const ruanganSnapshot = await db.collection("ruangan").where("namaGedung", "==", referenceName).limit(1).get();
             if (!ruanganSnapshot.empty) {
-                alert(`Gagal menghapus Gedung "${referenceName}". Masih ada ${ruanganSnapshot.size} atau lebih Ruangan yang terikat. Hapus semua Ruangan terlebih dahulu.`);
+                alert(`Gagal menghapus Gedung "${referenceName}". Masih ada ruangan yang terikat. Hapus semua Ruangan terlebih dahulu.`);
                 return;
             }
         } 
@@ -366,7 +364,7 @@ async function deleteData(docId, collectionName, referenceName) {
             // VALIDASI RUANGAN: Cek apakah masih ada barang di ruangan ini
             const barangSnapshot = await db.collection("barang").where("ruangan", "==", referenceName).limit(1).get();
             if (!barangSnapshot.empty) {
-                alert(`Gagal menghapus Ruangan "${referenceName}". Masih ada ${barangSnapshot.size} atau lebih Barang di dalamnya. Pindahkan atau Hapus semua Barang terlebih dahulu.`);
+                alert(`Gagal menghapus Ruangan "${referenceName}". Masih ada barang di dalamnya. Pindahkan atau Hapus semua Barang terlebih dahulu.`);
                 return;
             }
         }
@@ -377,6 +375,7 @@ async function deleteData(docId, collectionName, referenceName) {
         alert("Data berhasil dihapus!");
 
         // Update UI
+        // KOREKSI ERROR BARIS 167: Mengganti kode yang ambigu dengan panggilan fungsi yang jelas
         if (collectionName === 'barang') {
             loadKondisiBarang(); 
             loadDataBarang();
@@ -505,7 +504,6 @@ function loadDataBarang() {
         query = query.where("ruangan", "==", ruanganFilterValue);
     }
 
-    // Menggunakan onSnapshot untuk real-time update
     query.onSnapshot(snapshot => {
         tableBody.innerHTML = "";
         let i = 1;
@@ -554,6 +552,7 @@ function editBarang(docId) {
                 document.getElementById("kondisi-barang").value = data.kondisi;
 
                 // Memastikan dropdown ruangan sudah terisi sebelum set value
+                // Digunakan setTimeout karena loadRuanganForInputBarang() berjalan secara async
                 setTimeout(() => {
                     document.getElementById("ruangan-select").value = data.ruangan;
                 }, 300); 
