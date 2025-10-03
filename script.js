@@ -58,9 +58,10 @@ function registerUser() {
 
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
+            // Simpan data user ke Firestore
             db.collection("users").doc(userCredential.user.uid).set({
                 email: email,
-                role: 'guru',
+                role: 'guru', // Default role
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             messageElement.textContent = "Pendaftaran berhasil! Silakan Login.";
@@ -69,7 +70,7 @@ function registerUser() {
             showAuthView('login');
         })
         .catch(error => {
-            // Penanganan error Firebase yang lebih detail
+            // Penanganan error Firebase
             if (error.code === 'auth/email-already-in-use') {
                 messageElement.textContent = "Registrasi gagal: Email sudah terdaftar.";
             } else if (error.code === 'auth/invalid-email') {
@@ -97,7 +98,7 @@ function loginUser() {
             messageElement.textContent = ""; 
         })
         .catch(error => {
-            // Penanganan error Firebase yang lebih detail
+            // Penanganan error Firebase
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 messageElement.textContent = "Login gagal: Email atau Password salah.";
             } else if (error.code === 'auth/invalid-email') {
@@ -125,7 +126,7 @@ auth.onAuthStateChanged(user => {
         if (loginContainer) loginContainer.style.display = 'none';
         if (registerContainer) registerContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.display = 'flex'; 
-        showView('beranda'); 
+        showView('beranda'); // Tampilkan dashboard setelah login
     } else {
         if (dashboardContainer) dashboardContainer.style.display = 'none';
         showAuthView('login');
@@ -375,7 +376,6 @@ async function deleteData(docId, collectionName, referenceName) {
         alert("Data berhasil dihapus!");
 
         // Update UI
-        // KOREKSI ERROR BARIS 167: Mengganti kode yang ambigu dengan panggilan fungsi yang jelas
         if (collectionName === 'barang') {
             loadKondisiBarang(); 
             loadDataBarang();
@@ -384,7 +384,11 @@ async function deleteData(docId, collectionName, referenceName) {
             loadRuanganForInputBarang();
             loadRuanganForFilter();
             loadKondisiBarang();
-            loadDataReference(collectionName); 
+            // Panggil kembali fungsi untuk me-refresh tabel referensi yang sedang aktif
+            const table = document.getElementById(`${collectionName}-data-table`);
+            if (table && table.style.display !== 'none') {
+                loadDataReference(collectionName); 
+            }
         }
 
     } catch (error) {
@@ -434,6 +438,7 @@ function saveDataBarang(event) {
             submitButton.textContent = 'Save';
             loadDataBarang(); 
             loadKondisiBarang();
+            showView('beranda'); // Kembali ke beranda
         })
         .catch(error => {
             console.error("Gagal update barang:", error);
@@ -554,7 +559,11 @@ function editBarang(docId) {
                 // Memastikan dropdown ruangan sudah terisi sebelum set value
                 // Digunakan setTimeout karena loadRuanganForInputBarang() berjalan secara async
                 setTimeout(() => {
-                    document.getElementById("ruangan-select").value = data.ruangan;
+                    // Cek jika elemen ada sebelum set value
+                    const ruanganSelect = document.getElementById("ruangan-select");
+                    if (ruanganSelect) {
+                        ruanganSelect.value = data.ruangan;
+                    }
                 }, 300); 
 
                 currentBarangId = docId;
