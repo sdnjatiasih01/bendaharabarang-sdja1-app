@@ -51,6 +51,26 @@
                 <section id="beranda-view" class="view" style="display: none;">
                     <h2>Dashboard</h2>
                     <div id="summary-cards">
+                        <div class="card">
+                            <h4>Total Barang</h4>
+                            <p id="kondisi-total">0</p>
+                        </div>
+                        <div class="card card-baik">
+                            <h4>Kondisi Baik (B)</h4>
+                            <p id="kondisi-baik">0</p>
+                        </div>
+                        <div class="card card-rr">
+                            <h4>Rusak Ringan (RR)</h4>
+                            <p id="kondisi-rr">0</p>
+                        </div>
+                        <div class="card card-rb">
+                            <h4>Rusak Berat (RB)</h4>
+                            <p id="kondisi-rb">0</p>
+                        </div>
+                        <div class="card">
+                            <h4>Jumlah Gedung</h4>
+                            <p id="jumlah-gedung">0</p>
+                        </div>
                         </div>
                     
                     <div class="data-section">
@@ -85,7 +105,21 @@
                             <label>Nama Gedung:</label>
                             <input type="text" id="nama-gedung" required>
                         </div>
-                        <button type="submit">Save</button>
+                        <div class="form-row">
+                            <label>Nama Ruangan 1:</label>
+                            <input type="text" class="nama-ruangan-input" id="ruangan-1">
+                        </div>
+                        <div class="form-row">
+                            <label>Nama Ruangan 2:</label>
+                            <input type="text" class="nama-ruangan-input" id="ruangan-2">
+                        </div>
+                        <div class="form-row">
+                            <label>Nama Ruangan 3:</label>
+                            <input type="text" class="nama-ruangan-input" id="ruangan-3">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">Save</button>
+                        </div>
                     </form>
                 </section>
                 
@@ -112,8 +146,10 @@
                                 <option value="RB">Rusak Berat</option>
                             </select>
                         </div>
-                        <button type="submit">Save</button>
-                        <button type="reset">New</button>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="reset" class="btn btn-new">New</button>
+                        </div>
                     </form>
                 </section>
                 

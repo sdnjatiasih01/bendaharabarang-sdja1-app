@@ -1,3 +1,5 @@
+// script.js (FILE BARU DAN LENGKAP)
+
 // =================================================================
 // 1. FIREBASE CONFIGURATION & INIT
 // =================================================================
@@ -59,7 +61,9 @@ function registerUser() {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             messageElement.textContent = "Pendaftaran berhasil! Silakan Login.";
-            document.getElementById("register-container").reset();
+            // document.getElementById("register-container").reset(); // Tidak ada metode reset() untuk div
+            document.getElementById("register-email").value = '';
+            document.getElementById("register-password").value = '';
             showAuthView('login'); // Langsung pindah ke halaman Login
         })
         .catch(error => {
@@ -105,7 +109,7 @@ auth.onAuthStateChanged(user => {
         // User sedang login
         if (loginContainer) loginContainer.style.display = 'none';
         if (registerContainer) registerContainer.style.display = 'none';
-        if (dashboardContainer) dashboardContainer.style.display = 'block'; 
+        if (dashboardContainer) dashboardContainer.style.display = 'flex'; // Mengubah dari 'block' ke 'flex'
         showView('beranda'); 
     } else {
         // User logout atau belum login
@@ -142,7 +146,10 @@ function showView(viewId) {
         loadDataBarang(); 
     } else if (viewId === 'input_barang') {
         loadRuanganForInputBarang(); 
-    } 
+    } else if (viewId === 'input_ruangan') {
+        // Kosongkan form ruangan setiap kali masuk
+        document.getElementById("form-ruangan").reset();
+    }
 } 
 
 // =================================================================
@@ -153,7 +160,7 @@ function showView(viewId) {
 function saveDataRuangan(event) {
     event.preventDefault();
     const namaGedung = document.getElementById("nama-gedung").value;
-    // Tambahkan pengambilan data lain sesuai form Anda (luas, lantai, dll.)
+    let ruanganCount = 0; // Penghitung ruangan yang terisi
 
     const ruanganData = {
         namaGedung: namaGedung,
@@ -161,18 +168,17 @@ function saveDataRuangan(event) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     
-    // Ambil data nama ruangan (Asumsi menggunakan ID/Class yang berbeda)
-    // PENTING: Jika form Ruangan Anda memiliki input untuk 30 ruangan (ruangan_1 s.d. ruangan_30)
-    // Pastikan semua input ruangan menggunakan kelas 'nama-ruangan-input'
+    // Ambil data nama ruangan (ruangan_1 s.d. ruangan_n)
     document.querySelectorAll('#form-ruangan .nama-ruangan-input').forEach((input, index) => {
         const key = `ruangan_${index + 1}`;
         if (input.value.trim() !== '') {
             ruanganData[key] = input.value.trim();
+            ruanganCount++;
         }
     });
     
-    // Jika tidak ada input ruangan spesifik, simpan hanya nama gedung
-    if (Object.keys(ruanganData).length <= 3) {
+    // VALIDASI: Memastikan setidaknya satu ruangan terisi
+    if (ruanganCount === 0) {
          alert("Mohon isi setidaknya satu nama ruangan di dalam gedung.");
          return;
     }
@@ -180,8 +186,11 @@ function saveDataRuangan(event) {
 
     db.collection("ruangan").add(ruanganData)
         .then(() => {
-            alert(`Data Gedung "${namaGedung}" berhasil ditambahkan!`);
+            alert(`Data Gedung "${namaGedung}" dengan ${ruanganCount} ruangan berhasil ditambahkan!`);
             document.getElementById("form-ruangan").reset();
+            // Muat ulang ruangan untuk dropdown
+            loadRuanganForInputBarang(); 
+            loadRuanganForFilter(); 
         })
         .catch(error => {
             console.error("Gagal menambahkan ruangan:", error);
@@ -192,6 +201,7 @@ function saveDataRuangan(event) {
 // LOAD RUANGAN KE DROPDOWN INPUT BARANG (SOLUSI UNTUK REFERENSI RUANGAN)
 function loadRuanganForInputBarang() {
     const ruanganSelect = document.getElementById("ruangan-select");
+    if (!ruanganSelect) return;
     ruanganSelect.innerHTML = '<option value="" disabled selected>Pilih Ruangan</option>';
     const allRooms = new Set(); 
 
@@ -253,12 +263,15 @@ function loadRuanganForFilter() {
 // 4. DATA BARANG (CRUD)
 // =================================================================
 
-// SAVE DATA BARANG
+// GLOBAL VARIABLE UNTUK TRACK EDIT MODE
+let currentBarangId = null;
+
+// SAVE DATA BARANG (DENGAN FUNGSI EDIT)
 function saveDataBarang(event) {
     event.preventDefault();
     const ruangan = document.getElementById("ruangan-select").value; 
     const namaBarang = document.getElementById("nama-barang").value; 
-    const merkType = document.getElementById("merk-type").value; // Ambil field baru
+    const merkType = document.getElementById("merk-type").value; 
     const kondisi = document.getElementById("kondisi-barang").value; 
     
     if (!ruangan || ruangan === "") {
@@ -266,31 +279,78 @@ function saveDataBarang(event) {
         return;
     }
 
-    db.collection("barang").add({ 
+    const barangData = { 
         ruangan, 
         namaBarang, 
-        merkType, // Tambahkan Merk/Tipe
+        merkType, 
         kondisi,
         createdBy: auth.currentUser ? auth.currentUser.email : 'unknown',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-    })
-    .then(() => {
-        alert(`Barang "${namaBarang}" berhasil ditambahkan!`);
-        document.getElementById("form-barang").reset();
-    })
-    .catch(error => {
-        console.error("Gagal menambahkan barang:", error);
-        alert("Error: Gagal menyimpan data barang.");
-    });
+    };
+
+    if (currentBarangId) {
+        // Mode EDIT
+        db.collection("barang").doc(currentBarangId).update(barangData)
+        .then(() => {
+            alert(`Barang "${namaBarang}" berhasil diupdate!`);
+            document.getElementById("form-barang").reset();
+            currentBarangId = null; // Reset mode
+            // Ubah teks tombol kembali ke "Save"
+            document.querySelector('#form-barang button[type="submit"]').textContent = 'Save';
+            loadDataBarang(); // Muat ulang data
+        })
+        .catch(error => {
+            console.error("Gagal update barang:", error);
+            alert("Error: Gagal menyimpan data barang.");
+        });
+
+    } else {
+        // Mode ADD
+        barangData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        db.collection("barang").add(barangData)
+        .then(() => {
+            alert(`Barang "${namaBarang}" berhasil ditambahkan!`);
+            document.getElementById("form-barang").reset();
+            loadKondisiBarang(); // Perbarui ringkasan
+            loadDataBarang(); 
+        })
+        .catch(error => {
+            console.error("Gagal menambahkan barang:", error);
+            alert("Error: Gagal menyimpan data barang.");
+        });
+    }
 }
 
 
 // LOAD RINGKASAN KONDISI BARANG
 function loadKondisiBarang() {
-    const baik = document.getElementById("kondisi-baik");
-    // ... elemen card lainnya ...
-    // ... Logika Ringkasan Barang dan Jumlah Gedung ...
-    // Diabaikan di sini karena logika dasarnya sudah benar di jawaban sebelumnya.
+    const totalEl = document.getElementById("kondisi-total");
+    const baikEl = document.getElementById("kondisi-baik");
+    const rrEl = document.getElementById("kondisi-rr");
+    const rbEl = document.getElementById("kondisi-rb");
+    const gedungEl = document.getElementById("jumlah-gedung");
+
+    let count = { total: 0, B: 0, RR: 0, RB: 0 };
+
+    // 1. Hitung Barang
+    db.collection("barang").get().then(snapshot => {
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            count.total++;
+            if (data.kondisi === 'B') count.B++;
+            else if (data.kondisi === 'RR') count.RR++;
+            else if (data.kondisi === 'RB') count.RB++;
+        });
+
+        if (totalEl) totalEl.textContent = count.total;
+        if (baikEl) baikEl.textContent = count.B;
+        if (rrEl) rrEl.textContent = count.RR;
+        if (rbEl) rbEl.textContent = count.RB;
+    }).catch(error => console.error("Gagal memuat ringkasan barang:", error));
+
+    // 2. Hitung Gedung
+    db.collection("ruangan").get().then(snapshot => {
+        if (gedungEl) gedungEl.textContent = snapshot.size;
+    }).catch(error => console.error("Gagal memuat jumlah gedung:", error));
 }
 
 // LOAD DATA BARANG KE TABEL BERANDA
@@ -311,14 +371,19 @@ function loadDataBarang() {
         let i = 1;
         snapshot.forEach(doc => {
             const data = doc.data();
-            const merkType = data.merkType || '-'; 
+            // Tampilkan kondisi dalam bentuk kata
+            let kondisiText = '';
+            if (data.kondisi === 'B') kondisiText = 'Baik';
+            else if (data.kondisi === 'RR') kondisiText = 'Rusak Ringan';
+            else if (data.kondisi === 'RB') kondisiText = 'Rusak Berat';
+
             tableBody.innerHTML += `
                 <tr>
                     <td>${i++}</td>
                     <td>${data.namaBarang || '-'}</td>
                     <td>${data.merkType || '-'}</td>
                     <td>${data.ruangan || '-'}</td>
-                    <td>${data.kondisi || '-'}</td>
+                    <td>${kondisiText || '-'}</td>
                     <td>
                         <button class="btn btn-edit" onclick="editBarang('${doc.id}')">Edit</button>
                         <button class="btn btn-delete" onclick="deleteData('${doc.id}', 'barang')">Hapus</button>
@@ -328,6 +393,8 @@ function loadDataBarang() {
         if (snapshot.empty) {
             tableBody.innerHTML = '<tr><td colspan="6">Tidak ada data barang.</td></tr>';
         }
+        // Pastikan summary cards juga di update setelah load
+        loadKondisiBarang(); 
     });
 }
 
@@ -338,8 +405,55 @@ function deleteData(docId, collectionName) {
     db.collection(collectionName).doc(docId).delete()
         .then(() => {
             alert("Data berhasil dihapus!");
+            // Jika yang dihapus adalah barang, update ringkasan
+            if (collectionName === 'barang') loadKondisiBarang(); 
+            // Jika yang dihapus adalah ruangan, update dropdowns
+            if (collectionName === 'ruangan') {
+                loadRuanganForInputBarang();
+                loadRuanganForFilter();
+            }
         })
         .catch(error => console.error("Gagal hapus:", error));
+}
+
+
+// FUNGSI EDIT BARANG
+function editBarang(docId) {
+    // 1. Pindah ke view Input Data Barang
+    showView('input_barang');
+
+    // 2. Ambil data barang dari Firestore
+    db.collection("barang").doc(docId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                
+                // 3. Isi form dengan data
+                document.getElementById("nama-barang").value = data.namaBarang;
+                document.getElementById("merk-type").value = data.merkType || '';
+                document.getElementById("kondisi-barang").value = data.kondisi;
+
+                // Memastikan dropdown ruangan sudah terisi sebelum set value
+                // Karena loadRuanganForInputBarang() berjalan async, kita bisa menggunakan setTimeout 
+                // atau menunggu promise jika ini adalah kode yang lebih kompleks. 
+                // Untuk kasus sederhana, panggil kembali loadRuangan dan set value di callback atau setTimeout.
+                // Untuk solusi cepat, gunakan setTimeout:
+                setTimeout(() => {
+                    document.getElementById("ruangan-select").value = data.ruangan;
+                }, 500); // Tunggu 500ms agar dropdown terisi
+
+                // 4. Set global ID dan ubah teks tombol
+                currentBarangId = docId;
+                document.querySelector('#form-barang button[type="submit"]').textContent = 'Update';
+                
+            } else {
+                alert("Data barang tidak ditemukan.");
+            }
+        })
+        .catch(error => {
+            console.error("Gagal memuat data edit:", error);
+            alert("Gagal memuat data untuk diedit.");
+        });
 }
 
 
@@ -348,10 +462,5 @@ function applyFilter() {
     loadDataBarang(); 
 }
 
-function editBarang(docId) {
-    alert(`Siap edit barang ID: ${docId}.`);
-    // Implementasikan modal/form edit di sini.
-}
-
-// Catatan: Pastikan Anda menambahkan elemen HTML untuk cards ringkasan data
-// dengan ID: kondisi-baik, kondisi-rr, kondisi-rb, kondisi-total, jumlah-gedung.
+// Panggil showView('beranda') saat pertama kali dashboard muncul
+// Ini sudah dilakukan di auth.onAuthStateChanged
