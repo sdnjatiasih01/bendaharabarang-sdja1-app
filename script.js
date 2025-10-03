@@ -33,7 +33,7 @@ function logoutUser() {
   auth.signOut().then(() => {
     console.log("Logout berhasil");
     document.getElementById("login-container").style.display = "block";
-    document.getElementById("app-container").style.display = "none";
+    document.getElementById("dashboard-container").style.display = "none";
   }).catch(error => {
     console.error("Logout gagal:", error.message);
   });
@@ -44,12 +44,14 @@ function showView(viewId) {
     // Sembunyikan semua section view
     document.querySelectorAll('.view').forEach(view => {
         view.style.display = 'none';
+		view.classList.remove('active-view')
     });
 
     // Tampilkan view yang diminta
     const targetView = document.getElementById(`${viewId}-view`);
     if (targetView) {
         targetView.style.display = 'block';
+		targetView.classList.add('active-view');
     }
 
     // Perbarui kelas 'active' pada sidebar
@@ -63,12 +65,23 @@ function showView(viewId) {
     
     // Panggil fungsi pemuatan data sesuai viewId:
     if (viewId === 'beranda') {
-        loadKondisiBarang(); // Hanya panggil yang relevan
+        loadDataBarang();
+		loadKondisiBarang();
+		
+	} else if (viewId === 'referensi') {
+        loadPenanggungJawabTable();
+	} else if (viewId === 'input_ruangan') {
+        loadDataRuangan();
+	} else if (viewId === 'identitas') {
+        loadIdentitas();
+	} else if (viewId === 'input_barang') {
+        loadDataBarang();
+	} 				
+		// Hanya panggil yang relevan
         // loadDataRuanganList(); // Tambahkan jika Anda memiliki fungsi ini untuk beranda
     }
     // Tambahkan view-view lain jika mereka memerlukan pemuatan data spesifik saat dibuka
-}
-});
+	};
 
 // Pastikan fungsi showView() Anda sudah memuat data yang relevan
 // SCRIPT.JS: GANTI FUNGSI showView(viewId) YANG TERSISA DENGAN KODE INI
@@ -157,15 +170,15 @@ function loadKondisiBarang() {
 // Save Barang
 function saveDataBarang(event) {
   event.preventDefault();
-  const namaBarang = document.getElementById("form-nama-barang").value;
+  const namaBarang = document.getElementById("nama-barang").value;
   const merkType = document.getElementById("form-merk-type").value;
-  const ruangan = document.getElementById("form-ruangan").value;
-  const kondisi = document.getElementById("form-kondisi").value;
+  const ruangan = document.getElementById("ruangan-select").value;
+  const kondisi = document.getElementById("kondisi-barang").value;
   db.collection("barang").add({ namaBarang, merkType, ruangan, kondisi })
     .then(() => {
       console.log("Barang berhasil ditambahkan!");
       closeModal();
-      document.getElementById("form-barang-modal").reset();
+      document.getElementById("form-barang").reset();
     })
     .catch(error => {
       console.error("Gagal menambahkan barang:", error);
@@ -225,7 +238,7 @@ function loadPenanggungJawabTable() {
 // Observer
 auth.onAuthStateChanged(user => {
   const loginContainer = document.getElementById('login-container');
-  const dashboard-container = document.getElementById('app-container');
+  const dashboard-container = document.getElementById('dashboard-container');
   if (user) {
     loginContainer.style.display = 'none';
     dashboard-container.style.display = 'block';
