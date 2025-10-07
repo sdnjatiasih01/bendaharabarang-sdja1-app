@@ -172,7 +172,6 @@ function loadRuangan() {
   const selectGedung = document.getElementById("gedung-select");
   body.innerHTML = "<tr><td colspan='5'>Memuat...</td></tr>";
 
-  // isi dropdown gedung
   selectGedung.innerHTML = "";
   db.collection("gedung").orderBy("namaGedung").get().then(gSnap => {
     gSnap.forEach(doc => {
@@ -212,7 +211,7 @@ function deleteRuangan(id) {
 }
 
 // ======================
-// 6) BARANG CRUD
+// 6) BARANG CRUD + FILTER PER RUANGAN
 // ======================
 function saveBarang(e) {
   e.preventDefault();
@@ -221,6 +220,11 @@ function saveBarang(e) {
   const jumlah = parseInt(document.getElementById("jumlah-barang").value.trim());
   const ruangan = document.getElementById("ruangan-select").value.trim();
   const kondisi = document.getElementById("kondisi-barang").value.trim();
+
+  if (!ruangan) {
+    alert("Silakan pilih ruangan terlebih dahulu!");
+    return;
+  }
 
   db.collection("barang").add({
     namaBarang: nama,
@@ -241,7 +245,8 @@ function loadBarang() {
   const selectRuangan = document.getElementById("ruangan-select");
   body.innerHTML = "<tr><td colspan='7'>Memuat...</td></tr>";
 
-  selectRuangan.innerHTML = "";
+  selectRuangan.innerHTML = "<option value=''>-- Pilih Ruangan --</option>";
+
   db.collection("ruangan").orderBy("namaRuangan").get().then(rSnap => {
     rSnap.forEach(doc => {
       const d = doc.data();
@@ -252,23 +257,33 @@ function loadBarang() {
     });
   });
 
-  db.collection("barang").orderBy("namaBarang").get().then(snap => {
-    let html = "";
-    let i = 1;
-    snap.forEach(doc => {
-      const d = doc.data();
-      html += `
-        <tr>
-          <td>${i++}</td>
-          <td>${d.namaBarang || '-'}</td>
-          <td>${d.merkType || '-'}</td>
-          <td>${d.jumlah || 0}</td>
-          <td>${d.ruangan || '-'}</td>
-          <td>${d.kondisi || '-'}</td>
-          <td><button onclick="deleteBarang('${doc.id}')">Hapus</button></td>
-        </tr>`;
+  body.innerHTML = "<tr><td colspan='7'>Silakan pilih ruangan untuk melihat data barang.</td></tr>";
+
+  selectRuangan.addEventListener("change", () => {
+    const selected = selectRuangan.value;
+    if (!selected) {
+      body.innerHTML = "<tr><td colspan='7'>Silakan pilih ruangan untuk melihat data barang.</td></tr>";
+      return;
+    }
+
+    db.collection("barang").where("ruangan", "==", selected).orderBy("namaBarang").get().then(snap => {
+      let html = "";
+      let i = 1;
+      snap.forEach(doc => {
+        const d = doc.data();
+        html += `
+          <tr>
+            <td>${i++}</td>
+            <td>${d.namaBarang || '-'}</td>
+            <td>${d.merkType || '-'}</td>
+            <td>${d.jumlah || 0}</td>
+            <td>${d.ruangan || '-'}</td>
+            <td>${d.kondisi || '-'}</td>
+            <td><button onclick="deleteBarang('${doc.id}')">Hapus</button></td>
+          </tr>`;
+      });
+      body.innerHTML = html || "<tr><td colspan='7'>Tidak ada barang di ruangan ini.</td></tr>";
     });
-    body.innerHTML = html || "<tr><td colspan='7'>Belum ada data.</td></tr>";
   });
 }
 
@@ -431,22 +446,19 @@ function loadLaporan() {
 }
 
 function printLaporan() {
-  showView("laporan");
-  loadLaporan();
-  setTimeout(() => { window.print(); }, 500);
+  window.print();
 }
 
 // ======================
-// 9) INIT AFTER LOGIN
+// 9) INITIALIZATION
 // ======================
 function initializeAppAfterLogin() {
-  showView("beranda");
   loadGedung();
   loadRuangan();
   loadBarang();
-  loadIdentitas();
   loadFilterRuanganOptions();
   loadDashboardCountsAndChart();
   updateDashboardRuangan();
   loadLaporan();
+  loadIdentitas();
 }
