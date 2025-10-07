@@ -45,6 +45,7 @@
         <button class="logout-btn" onclick="logoutUser()">Logout</button>
       </div>
     </header>
+
     <div id="main-content">
       <nav id="sidebar">
         <a href="#" class="nav-item" onclick="showView('beranda')">Beranda</a>
@@ -54,8 +55,9 @@
         <a href="#" class="nav-item" onclick="showView('identitas')">Identitas</a>
         <a href="#" class="nav-item" onclick="showView('laporan')">Laporan</a>
       </nav>
-      <main id="content-area">
 
+      <main id="content-area">
+        
         <!-- Dashboard -->
         <section id="beranda-view" class="view">
           <h2>Dashboard</h2>
@@ -117,23 +119,45 @@
         <!-- Barang -->
         <section id="barang-view" class="view" style="display:none;">
           <h2>Data Barang</h2>
+
           <form onsubmit="saveBarang(event)">
-          <select id="ruangan-select" required>
-          <option value="">-- Pilih Ruangan --</option>
-        </select>
-          <input type="text" id="nama-barang" placeholder="Nama Barang" required>
-          <input type="text" id="merk-barang" placeholder="Merk/Tipe">
-          <input type="number" id="jumlah-barang" placeholder="Jumlah" required>
-          <select id="kondisi-barang" required>
-            <option value="B">Baik</option>
-            <option value="RR">Rusak Ringan</option>
-            <option value="RB">Rusak Berat</option>
-          </select>
-          <button type="submit">Tambah</button>
-        </form>
+            <!-- 1. Ruangan -->
+            <select id="ruangan-select" required>
+              <option value="">-- Pilih Ruangan --</option>
+            </select>
+
+            <!-- 2. Nama Barang -->
+            <input type="text" id="nama-barang" placeholder="Nama Barang" required>
+
+            <!-- 3. Merk/Tipe -->
+            <input type="text" id="merk-barang" placeholder="Merk/Tipe">
+
+            <!-- 4. Jumlah -->
+            <input type="number" id="jumlah-barang" placeholder="Jumlah" required>
+
+            <!-- 5. Kondisi -->
+            <select id="kondisi-barang" required>
+              <option value="B">Baik</option>
+              <option value="RR">Rusak Ringan</option>
+              <option value="RB">Rusak Berat</option>
+            </select>
+
+            <!-- Tombol tambah -->
+            <button type="submit">Tambah</button>
+          </form>
 
           <table class="data-table">
-            <thead><tr><th>No</th><th>Nama</th><th>Merk</th><th>Jumlah</th><th>Ruangan</th><th>Kondisi</th><th>Aksi</th></tr></thead>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama</th>
+                <th>Merk</th>
+                <th>Jumlah</th>
+                <th>Ruangan</th>
+                <th>Kondisi</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
             <tbody id="barang-body"></tbody>
           </table>
         </section>
