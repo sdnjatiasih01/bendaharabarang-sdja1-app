@@ -118,7 +118,9 @@
         <section id="barang-view" class="view" style="display:none;">
           <h2>Data Barang</h2>
           <form onsubmit="saveBarang(event)">
-          <select id="ruangan-select" required></select>
+          <select id="ruangan-select" required>
+          <option value="">-- Pilih Ruangan --</option>
+        </select>
           <input type="text" id="nama-barang" placeholder="Nama Barang" required>
           <input type="text" id="merk-barang" placeholder="Merk/Tipe">
           <input type="number" id="jumlah-barang" placeholder="Jumlah" required>
