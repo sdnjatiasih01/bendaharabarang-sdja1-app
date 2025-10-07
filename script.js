@@ -47,8 +47,64 @@ function showView(v) {
 // ... (Bagian 4 sampai 7 tetap sama karena tidak ada perubahan fungsi CRUD) ...
 
 // ======================
+// ======================
 // 4) AUTH FUNCTIONS
-// ... (Kode tetap) ...
+// ======================
+
+// Registrasi akun baru
+function registerUser() {
+  const email = document.getElementById("register-email").value.trim();
+  const password = document.getElementById("register-password").value.trim();
+  const msg = document.getElementById("reg-message");
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      msg.textContent = "Registrasi berhasil! Silakan login.";
+      showAuthView("login");
+    })
+    .catch(err => {
+      msg.textContent = "Gagal registrasi: " + err.message;
+    });
+}
+
+// Login pengguna
+function loginUser() {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  const msg = document.getElementById("auth-message");
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      msg.textContent = "";
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("dashboard-container").style.display = "flex";
+      initializeAppAfterLogin();
+    })
+    .catch(err => {
+      msg.textContent = "Login gagal: " + err.message;
+    });
+}
+
+// Logout
+function logoutUser() {
+  auth.signOut().then(() => {
+    document.getElementById("dashboard-container").style.display = "none";
+    showAuthView("login");
+  });
+}
+
+// Listener untuk status login
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("login-container").style.display = "none";
+    document.getElementById("dashboard-container").style.display = "flex";
+    initializeAppAfterLogin();
+  } else {
+    document.getElementById("dashboard-container").style.display = "none";
+    showAuthView("login");
+  }
+});
+
 
 // ======================
 // 5) GEDUNG CRUD
