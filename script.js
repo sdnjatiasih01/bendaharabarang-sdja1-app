@@ -1,5 +1,5 @@
 // ======================
-// script.js — Inventaris SDN Jatiasih I (Versi Lengkap + Perbaikan)
+// script.js — Inventaris SDN Jatiasih I (Versi Lengkap + Filter Ruangan & Logo Laporan)
 // ======================
 
 // ----------------------
@@ -203,9 +203,10 @@ function deleteRuangan(id) {
     }).catch(err => alert("Gagal hapus: " + err.message));
   }
 }
-// ======================
+
+// ----------------------
 // 6) CRUD BARANG
-// ======================
+// ----------------------
 function saveBarang(e) {
   e.preventDefault();
   const ruanganSelect = document.getElementById("ruangan-select");
@@ -274,16 +275,16 @@ function deleteBarang(id) {
   }
 }
 
-// ======================
+// ----------------------
 // 7) IDENTITAS SEKOLAH
-// ======================
+// ----------------------
 const IDENTITAS_DOC_ID = "profil-sekolah";
 
 async function saveIdentitas(e) {
   e.preventDefault();
   const nama = document.getElementById("nama-sekolah").value.trim();
   const alamat = document.getElementById("alamat-sekolah").value.trim();
-  const logoUrl = document.getElementById("logo-sekolah").value.trim(); // pakai URL
+  const logoUrl = document.getElementById("logo-sekolah").value.trim();
   const bendaharaNama = document.getElementById("bendahara-nama").value.trim();
   const bendaharaNip = document.getElementById("bendahara-nip").value.trim();
   const pjNama = document.getElementById("pj-nama").value.trim();
@@ -323,9 +324,9 @@ function loadIdentitas() {
   });
 }
 
-// ======================
-// 8) LAPORAN
-// ======================
+// ----------------------
+// 8) LAPORAN (dengan filter ruangan & logo sekolah)
+// ----------------------
 function updateTanggalCetakManual() {
   const input = document.getElementById("input-tanggal-cetak");
   const span = document.getElementById("tanggal-cetak");
@@ -343,9 +344,47 @@ function updateTanggalCetakManual() {
 
 function loadLaporan() {
   const tbody = document.getElementById("laporan-body");
+  const filterSelect = document.getElementById("laporan-filter-ruangan");
   tbody.innerHTML = "<tr><td colspan='5'>Memuat...</td></tr>";
 
-  db.collection("barang").orderBy("namaBarang").get().then(snap => {
+  // isi pilihan ruangan
+  filterSelect.innerHTML = "<option value=''>-- Semua Ruangan --</option>";
+  db.collection("ruangan").orderBy("namaRuangan").get().then(snap => {
+    snap.forEach(doc => {
+      const d = doc.data();
+      const opt = document.createElement("option");
+      opt.value = d.namaRuangan;
+      opt.text = d.namaRuangan;
+      filterSelect.appendChild(opt);
+    });
+  });
+
+  tampilkanLaporanBarang();
+
+  // ambil identitas sekolah + logo
+  db.collection("identitas").doc(IDENTITAS_DOC_ID).get().then(doc => {
+    if (!doc.exists) return;
+    const d = doc.data();
+    document.getElementById("lap-nama-sekolah").innerText = d.namaSekolah || "";
+    document.getElementById("lap-alamat-sekolah").innerText = d.alamat || "";
+    document.getElementById("lap-bendahara-nama").innerText = d.bendaharaNama || "";
+    document.getElementById("lap-bendahara-nip").innerText = d.bendaharaNip || "";
+    if (d.logoUrl) {
+      const logoEl = document.getElementById("lap-logo-sekolah");
+      if (logoEl) logoEl.src = d.logoUrl;
+    }
+  });
+}
+
+function tampilkanLaporanBarang() {
+  const tbody = document.getElementById("laporan-body");
+  const selectedRuangan = document.getElementById("laporan-filter-ruangan").value;
+  tbody.innerHTML = "<tr><td colspan='5'>Memuat...</td></tr>";
+
+  let query = db.collection("barang").orderBy("namaBarang");
+  if (selectedRuangan) query = query.where("ruangan", "==", selectedRuangan);
+
+  query.get().then(snap => {
     let html = "", i = 1;
     snap.forEach(doc => {
       const d = doc.data();
@@ -360,35 +399,15 @@ function loadLaporan() {
     });
     tbody.innerHTML = html || "<tr><td colspan='5'>Tidak ada data.</td></tr>";
   });
-
-  // ambil identitas sekolah
-  db.collection("identitas").doc(IDENTITAS_DOC_ID).get().then(doc => {
-    if (!doc.exists) return;
-    const d = doc.data();
-    document.getElementById("lap-nama-sekolah").innerText = d.namaSekolah || "";
-    document.getElementById("lap-alamat-sekolah").innerText = d.alamat || "";
-    document.getElementById("lap-bendahara-nama").innerText = d.bendaharaNama || "";
-    document.getElementById("lap-bendahara-nip").innerText = d.bendaharaNip || "";
-    if (d.logoUrl) document.getElementById("logo-preview").src = d.logoUrl;
-  });
-
-  // ambil penanggung jawab dari ruangan pertama
-  db.collection("ruangan").limit(1).get().then(snap => {
-    snap.forEach(doc => {
-      const d = doc.data();
-      document.getElementById("lap-pj-nama").innerText = d.penanggungJawab || "";
-      document.getElementById("lap-pj-nip").innerText = d.nipPJ || "";
-    });
-  });
 }
 
 function printLaporan() {
   window.print();
 }
 
-// ======================
+// ----------------------
 // 9) DASHBOARD
-// ======================
+// ----------------------
 let chartRuangan = null;
 
 function loadDashboardCountsAndChart() {
@@ -465,9 +484,9 @@ function updateDashboardRuangan() {
   });
 }
 
-// ======================
+// ----------------------
 // 10) INITIALIZATION
-// ======================
+// ----------------------
 function initializeAppAfterLogin() {
   loadGedung();
   loadRuangan();
