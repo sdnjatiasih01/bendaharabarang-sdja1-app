@@ -159,15 +159,23 @@
           <div id="laporan-container">
             <div class="kop-laporan">
               <div style="display:flex; align-items:center; gap:15px;">
-                <img id="logo-preview" src="" alt="Logo Sekolah" height="80">
+                <img id="lap-logo-sekolah" src="" alt="Logo Sekolah" height="80">
                 <div>
                   <h3 id="lap-nama-sekolah">Nama Sekolah</h3>
                   <p id="lap-alamat-sekolah">Alamat Sekolah</p>
                 </div>
               </div>
             </div>
+
             <hr style="margin:10px 0;">
             <h3 class="laporan-header">Laporan Inventaris</h3>
+
+            <div style="margin:10px 0;">
+              <label><b>Filter Berdasarkan Ruangan:</b></label>
+              <select id="laporan-filter-ruangan" onchange="tampilkanLaporanBarang()">
+                <option value="">-- Semua Ruangan --</option>
+              </select>
+            </div>
 
             <div style="margin:10px 0;">
               <label><b>Tanggal Cetak:</b></label>
