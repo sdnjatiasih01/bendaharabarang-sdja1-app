@@ -1,5 +1,5 @@
 // ======================
-// script.js — Full App
+// script.js — Full App (fixed no-index error)
 // ======================
 
 // ======================
@@ -211,7 +211,7 @@ function deleteRuangan(id) {
 }
 
 // ======================
-// 6) BARANG CRUD + FILTER PER RUANGAN
+// 6) BARANG CRUD + FIXED FILTER
 // ======================
 function saveBarang(e) {
   e.preventDefault();
@@ -245,8 +245,8 @@ function loadBarang() {
   const selectRuangan = document.getElementById("ruangan-select");
   body.innerHTML = "<tr><td colspan='7'>Memuat...</td></tr>";
 
+  // Isi dropdown ruangan
   selectRuangan.innerHTML = "<option value=''>-- Pilih Ruangan --</option>";
-
   db.collection("ruangan").orderBy("namaRuangan").get().then(rSnap => {
     rSnap.forEach(doc => {
       const d = doc.data();
@@ -257,8 +257,7 @@ function loadBarang() {
     });
   });
 
-  body.innerHTML = "<tr><td colspan='7'>Silakan pilih ruangan untuk melihat data barang.</td></tr>";
-
+  // Event saat pilih ruangan
   selectRuangan.addEventListener("change", () => {
     const selected = selectRuangan.value;
     if (!selected) {
@@ -266,7 +265,8 @@ function loadBarang() {
       return;
     }
 
-    db.collection("barang").where("ruangan", "==", selected).orderBy("namaBarang").get().then(snap => {
+    // HAPUS orderBy agar tidak butuh index
+    db.collection("barang").where("ruangan", "==", selected).get().then(snap => {
       let html = "";
       let i = 1;
       snap.forEach(doc => {
@@ -380,6 +380,7 @@ function updateDashboardRuangan() {
     return;
   }
 
+  // HAPUS orderBy agar tidak butuh index
   db.collection("barang").where("ruangan", "==", chosen).get().then(snap => {
     let rowsHtml = "";
     let i = 1;
@@ -458,7 +459,5 @@ function initializeAppAfterLogin() {
   loadBarang();
   loadFilterRuanganOptions();
   loadDashboardCountsAndChart();
-  updateDashboardRuangan();
-  loadLaporan();
   loadIdentitas();
 }
