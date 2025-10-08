@@ -67,12 +67,13 @@ function showView(viewId) {
 // ===============================
 function saveGedung(e) {
   e.preventDefault();
-  db.collection("gedung").add({
+  const data = {
     nama: document.getElementById("nama-gedung").value,
     luas: document.getElementById("luas-gedung").value,
     tahun: document.getElementById("tahun-gedung").value,
     sumber: document.getElementById("sumber-gedung").value
-  }).then(() => e.target.reset());
+  };
+  db.collection("gedung").add(data).then(() => e.target.reset());
 }
 
 function loadGedung() {
@@ -82,13 +83,18 @@ function loadGedung() {
     let no = 1;
     snapshot.forEach(doc => {
       const d = doc.data();
+      const nama = d.nama || d.namaGedung || "-";
+      const luas = d.luas || "-";
+      const tahun = d.tahun || "-";
+      const sumber = d.sumber || d.sumberAnggaran || "-";
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
-        <td>${d.nama}</td>
-        <td>${d.luas}</td>
-        <td>${d.tahun}</td>
-        <td>${d.sumber}</td>
+        <td>${nama}</td>
+        <td>${luas}</td>
+        <td>${tahun}</td>
+        <td>${sumber}</td>
         <td><button onclick="hapusGedung('${doc.id}')">Hapus</button></td>
       `;
       tbody.appendChild(tr);
@@ -103,14 +109,17 @@ function hapusGedung(id) {
 }
 
 // ===============================
-// CRUD RUANGAN
+// CRUD RUANGAN (Kompatibel Lama & Baru)
 // ===============================
 function saveRuangan(e) {
   e.preventDefault();
   const data = {
     nama: document.getElementById("nama-ruangan").value,
+    namaRuangan: document.getElementById("nama-ruangan").value,
     gedung: document.getElementById("gedung-select").value,
-    penanggung: document.getElementById("penanggung-ruangan").value
+    namaGedung: document.getElementById("gedung-select").value,
+    penanggung: document.getElementById("penanggung-ruangan").value,
+    penanggungJawab: document.getElementById("penanggung-ruangan").value
   };
   db.collection("ruangan").add(data).then(() => e.target.reset());
 }
@@ -122,12 +131,16 @@ function loadRuangan() {
     let no = 1;
     snapshot.forEach(doc => {
       const d = doc.data();
+      const nama = d.nama || d.namaRuangan || "-";
+      const gedung = d.gedung || d.namaGedung || "-";
+      const penanggung = d.penanggung || d.penanggungJawab || "-";
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
-        <td>${d.nama}</td>
-        <td>${d.gedung || '-'}</td>
-        <td>${d.penanggung || '-'}</td>
+        <td>${nama}</td>
+        <td>${gedung}</td>
+        <td>${penanggung}</td>
         <td><button onclick="hapusRuangan('${doc.id}')">Hapus</button></td>
       `;
       tbody.appendChild(tr);
@@ -150,9 +163,10 @@ function loadRuanganSelects() {
     [selectBarang, selectFilter, selectLaporan].forEach(sel => {
       sel.innerHTML = '<option value="">-- Semua Ruangan --</option>';
       snap.forEach(doc => {
+        const data = doc.data();
         const opt = document.createElement("option");
         opt.value = doc.id;
-        opt.textContent = doc.data().nama;
+        opt.textContent = data.nama || data.namaRuangan;
         sel.appendChild(opt);
       });
     });
@@ -160,7 +174,7 @@ function loadRuanganSelects() {
 }
 
 // ===============================
-// CRUD BARANG
+// CRUD BARANG (Kompatibel Lama & Baru)
 // ===============================
 function saveBarang(e) {
   e.preventDefault();
@@ -174,6 +188,40 @@ function saveBarang(e) {
   db.collection("barang").add(data).then(() => e.target.reset());
 }
 
+function loadBarang() {
+  db.collection("barang").onSnapshot(snapshot => {
+    const tbody = document.getElementById("barang-body");
+    tbody.innerHTML = "";
+    let no = 1;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const nama = d.namaBarang || d.nama || "-";
+      const merk = d.merkBarang || d.merk || "-";
+      const jumlah = d.jumlah || 0;
+      const ruangan = d.ruangan || d.namaRuangan || "-";
+      const kondisi = d.kondisi || "-";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${nama}</td>
+        <td>${merk}</td>
+        <td>${jumlah}</td>
+        <td>${ruangan}</td>
+        <td>${kondisi}</td>
+        <td><button onclick="hapusBarang('${doc.id}')">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function hapusBarang(id) {
+  if (confirm("Hapus data barang ini?")) {
+    db.collection("barang").doc(id).delete();
+  }
+}
+
 // ===============================
 // IDENTITAS SEKOLAH
 // ===============================
@@ -185,7 +233,7 @@ function saveIdentitas(e) {
     logo: document.getElementById("logo-sekolah").value,
     bendaharaNama: document.getElementById("bendahara-nama").value,
     bendaharaNip: document.getElementById("bendahara-nip").value,
-    pjNama: document.getElementById("pj-nama").value, // Kepala Sekolah
+    pjNama: document.getElementById("pj-nama").value,
     pjNip: document.getElementById("pj-nip").value
   }).then(() => alert("Identitas sekolah disimpan"));
 }
@@ -221,7 +269,6 @@ function tampilkanLaporanBarang() {
   const kondisi = document.getElementById("laporan-filter-kondisi").value;
 
   let query = db.collection("barang");
-
   if (ruangan) query = query.where("ruangan", "==", ruangan);
   if (kondisi) query = query.where("kondisi", "==", kondisi);
 
@@ -231,13 +278,18 @@ function tampilkanLaporanBarang() {
     let no = 1;
     snapshot.forEach(doc => {
       const d = doc.data();
+      const nama = d.namaBarang || d.nama || "-";
+      const merk = d.merkBarang || d.merk || "-";
+      const jumlah = d.jumlah || 0;
+      const kondisiData = d.kondisi || "-";
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
-        <td>${d.namaBarang}</td>
-        <td>${d.merkBarang}</td>
-        <td>${d.jumlah}</td>
-        <td>${d.kondisi}</td>
+        <td>${nama}</td>
+        <td>${merk}</td>
+        <td>${jumlah}</td>
+        <td>${kondisiData}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -259,19 +311,7 @@ function downloadLaporanPDF() {
     const imgWidth = 210;
     const pageHeight = 295;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
     pdf.save("Laporan-Inventaris.pdf");
   });
 }
@@ -283,6 +323,7 @@ function initDataAfterLogin() {
   loadGedung();
   loadRuangan();
   loadRuanganSelects();
+  loadBarang();
   loadIdentitas();
   tampilkanLaporanBarang();
 }
