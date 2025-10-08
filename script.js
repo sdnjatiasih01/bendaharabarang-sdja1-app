@@ -1,10 +1,10 @@
 // ======================
-// script.js — Full App (fixed no-index error)
+// script.js — Inventaris SDN Jatiasih I (Versi Lengkap + Perbaikan)
 // ======================
 
-// ======================
+// ----------------------
 // 1) FIREBASE CONFIG
-// ======================
+// ----------------------
 const firebaseConfig = {
   apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
   authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
@@ -17,11 +17,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
-// ======================
-// 2) UI Helper Functions
-// ======================
+// ----------------------
+// 2) VIEW HANDLING
+// ----------------------
 function showAuthView(view) {
   document.getElementById("login-container").style.display = view === "login" ? "block" : "none";
   document.getElementById("register-container").style.display = view === "register" ? "block" : "none";
@@ -33,13 +32,14 @@ function showView(v) {
   if (el) el.style.display = "block";
 
   document.querySelectorAll("#sidebar .nav-item").forEach(a => a.classList.remove("active"));
-  const nav = Array.from(document.querySelectorAll("#sidebar .nav-item")).find(a => a.getAttribute("onclick")?.includes(`showView('${v}')`));
+  const nav = Array.from(document.querySelectorAll("#sidebar .nav-item"))
+    .find(a => a.getAttribute("onclick")?.includes(`showView('${v}')`));
   if (nav) nav.classList.add("active");
 }
 
-// ======================
-// 3) AUTH FUNCTIONS
-// ======================
+// ----------------------
+// 3) AUTH
+// ----------------------
 function registerUser() {
   const email = document.getElementById("register-email").value.trim();
   const password = document.getElementById("register-password").value.trim();
@@ -50,9 +50,7 @@ function registerUser() {
       msg.textContent = "Registrasi berhasil! Silakan login.";
       showAuthView("login");
     })
-    .catch(err => {
-      msg.textContent = "Gagal registrasi: " + err.message;
-    });
+    .catch(err => msg.textContent = "Gagal registrasi: " + err.message);
 }
 
 function loginUser() {
@@ -67,9 +65,7 @@ function loginUser() {
       document.getElementById("dashboard-container").style.display = "flex";
       initializeAppAfterLogin();
     })
-    .catch(err => {
-      msg.textContent = "Login gagal: " + err.message;
-    });
+    .catch(err => msg.textContent = "Login gagal: " + err.message);
 }
 
 function logoutUser() {
@@ -90,9 +86,9 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// ======================
-// 4) GEDUNG CRUD
-// ======================
+// ----------------------
+// 4) CRUD GEDUNG
+// ----------------------
 function saveGedung(e) {
   e.preventDefault();
   const nama = document.getElementById("nama-gedung").value.trim();
@@ -118,8 +114,7 @@ function loadGedung() {
   body.innerHTML = "<tr><td colspan='6'>Memuat...</td></tr>";
 
   db.collection("gedung").orderBy("namaGedung").get().then(snap => {
-    let html = "";
-    let i = 1;
+    let html = "", i = 1;
     snap.forEach(doc => {
       const d = doc.data();
       html += `
@@ -145,9 +140,9 @@ function deleteGedung(id) {
   }
 }
 
-// ======================
-// 5) RUANGAN CRUD
-// ======================
+// ----------------------
+// 5) CRUD RUANGAN
+// ----------------------
 function saveRuangan(e) {
   e.preventDefault();
   const nama = document.getElementById("nama-ruangan").value.trim();
@@ -184,8 +179,7 @@ function loadRuangan() {
   });
 
   db.collection("ruangan").orderBy("namaRuangan").get().then(snap => {
-    let html = "";
-    let i = 1;
+    let html = "", i = 1;
     snap.forEach(doc => {
       const d = doc.data();
       html += `
@@ -209,29 +203,24 @@ function deleteRuangan(id) {
     }).catch(err => alert("Gagal hapus: " + err.message));
   }
 }
-
 // ======================
-// 6) BARANG CRUD + FIXED FILTER
+// 6) CRUD BARANG
 // ======================
 function saveBarang(e) {
   e.preventDefault();
-  const nama = document.getElementById("nama-barang").value.trim();
-  const merk = document.getElementById("merk-barang").value.trim();
-  const jumlah = parseInt(document.getElementById("jumlah-barang").value.trim());
-  const ruangan = document.getElementById("ruangan-select").value.trim();
+  const ruanganSelect = document.getElementById("ruangan-select");
+  const namaRuangan = ruanganSelect.options[ruanganSelect.selectedIndex]?.text || "";
+  const namaBarang = document.getElementById("nama-barang").value.trim();
+  const merkType = document.getElementById("merk-barang").value.trim();
+  const jumlah = parseInt(document.getElementById("jumlah-barang").value.trim()) || 0;
   const kondisi = document.getElementById("kondisi-barang").value.trim();
 
-  if (!ruangan) {
-    alert("Silakan pilih ruangan terlebih dahulu!");
-    return;
-  }
-
   db.collection("barang").add({
-    namaBarang: nama,
-    merkType: merk,
-    jumlah: jumlah,
-    ruangan: ruangan,
-    kondisi: kondisi,
+    namaBarang,
+    merkType,
+    jumlah,
+    kondisi,
+    ruangan: namaRuangan,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     alert("Barang berhasil ditambahkan!");
@@ -242,48 +231,37 @@ function saveBarang(e) {
 
 function loadBarang() {
   const body = document.getElementById("barang-body");
-  const selectRuangan = document.getElementById("ruangan-select");
-  body.innerHTML = "<tr><td colspan='7'>Memuat...</td></tr>";
+  const ruanganSelect = document.getElementById("ruangan-select");
 
-  // Isi dropdown ruangan
-  selectRuangan.innerHTML = "<option value=''>-- Pilih Ruangan --</option>";
+  body.innerHTML = "<tr><td colspan='7'>Memuat...</td></tr>";
+  ruanganSelect.innerHTML = "";
+
   db.collection("ruangan").orderBy("namaRuangan").get().then(rSnap => {
     rSnap.forEach(doc => {
       const d = doc.data();
       const opt = document.createElement("option");
       opt.value = d.namaRuangan;
       opt.text = d.namaRuangan;
-      selectRuangan.appendChild(opt);
+      ruanganSelect.appendChild(opt);
     });
   });
 
-  // Event saat pilih ruangan
-  selectRuangan.addEventListener("change", () => {
-    const selected = selectRuangan.value;
-    if (!selected) {
-      body.innerHTML = "<tr><td colspan='7'>Silakan pilih ruangan untuk melihat data barang.</td></tr>";
-      return;
-    }
-
-    // HAPUS orderBy agar tidak butuh index
-    db.collection("barang").where("ruangan", "==", selected).get().then(snap => {
-      let html = "";
-      let i = 1;
-      snap.forEach(doc => {
-        const d = doc.data();
-        html += `
-          <tr>
-            <td>${i++}</td>
-            <td>${d.namaBarang || '-'}</td>
-            <td>${d.merkType || '-'}</td>
-            <td>${d.jumlah || 0}</td>
-            <td>${d.ruangan || '-'}</td>
-            <td>${d.kondisi || '-'}</td>
-            <td><button onclick="deleteBarang('${doc.id}')">Hapus</button></td>
-          </tr>`;
-      });
-      body.innerHTML = html || "<tr><td colspan='7'>Tidak ada barang di ruangan ini.</td></tr>";
+  db.collection("barang").orderBy("namaBarang").get().then(snap => {
+    let html = "", i = 1;
+    snap.forEach(doc => {
+      const d = doc.data();
+      html += `
+        <tr>
+          <td>${i++}</td>
+          <td>${d.namaBarang || '-'}</td>
+          <td>${d.merkType || '-'}</td>
+          <td>${d.jumlah || 0}</td>
+          <td>${d.ruangan || '-'}</td>
+          <td>${d.kondisi || '-'}</td>
+          <td><button onclick="deleteBarang('${doc.id}')">Hapus</button></td>
+        </tr>`;
     });
+    body.innerHTML = html || "<tr><td colspan='7'>Belum ada data.</td></tr>";
   });
 }
 
@@ -299,43 +277,30 @@ function deleteBarang(id) {
 // ======================
 // 7) IDENTITAS SEKOLAH
 // ======================
-const IDENTITAS_DOC_ID = "config";
+const IDENTITAS_DOC_ID = "profil-sekolah";
 
 async function saveIdentitas(e) {
   e.preventDefault();
   const nama = document.getElementById("nama-sekolah").value.trim();
   const alamat = document.getElementById("alamat-sekolah").value.trim();
+  const logoUrl = document.getElementById("logo-sekolah").value.trim(); // pakai URL
   const bendaharaNama = document.getElementById("bendahara-nama").value.trim();
   const bendaharaNip = document.getElementById("bendahara-nip").value.trim();
   const pjNama = document.getElementById("pj-nama").value.trim();
   const pjNip = document.getElementById("pj-nip").value.trim();
 
-  const fileInput = document.getElementById("logo-sekolah");
-  const file = fileInput.files && fileInput.files[0];
-
   try {
-    let logoUrl = "";
-    if (file) {
-      const storageRef = storage.ref();
-      const fileRef = storageRef.child(`logo/logo_${Date.now()}_${file.name}`);
-      const snap = await fileRef.put(file);
-      logoUrl = await snap.ref.getDownloadURL();
-    } else {
-      const existing = await db.collection("identitas").doc(IDENTITAS_DOC_ID).get();
-      if (existing.exists) logoUrl = existing.data().logoUrl || "";
-    }
-
     await db.collection("identitas").doc(IDENTITAS_DOC_ID).set({
       namaSekolah: nama,
       alamat: alamat,
       logoUrl: logoUrl,
-      bendaharaNama: bendaharaNama,
-      bendaharaNip: bendaharaNip,
-      pjNama: pjNama,
-      pjNip: pjNip
+      bendaharaNama,
+      bendaharaNip,
+      pjNama,
+      pjNip
     }, { merge: true });
 
-    alert("Identitas disimpan.");
+    alert("Identitas disimpan!");
     loadIdentitas();
   } catch (err) {
     alert("Gagal simpan identitas: " + err.message);
@@ -348,91 +313,55 @@ function loadIdentitas() {
     const d = doc.data();
     document.getElementById("nama-sekolah").value = d.namaSekolah || "";
     document.getElementById("alamat-sekolah").value = d.alamat || "";
+    document.getElementById("logo-sekolah").value = d.logoUrl || "";
     document.getElementById("bendahara-nama").value = d.bendaharaNama || "";
     document.getElementById("bendahara-nip").value = d.bendaharaNip || "";
     document.getElementById("pj-nama").value = d.pjNama || "";
     document.getElementById("pj-nip").value = d.pjNip || "";
+
     if (d.logoUrl) document.getElementById("logo-preview").src = d.logoUrl;
   });
 }
 
 // ======================
-// 8) DASHBOARD & LAPORAN
+// 8) LAPORAN
 // ======================
-function loadFilterRuanganOptions() {
-  const sel = document.getElementById("filter-ruangan");
-  sel.innerHTML = "<option value=''>-- Pilih Ruangan --</option>";
-  db.collection("ruangan").orderBy("namaRuangan").get().then(snap => {
-    snap.forEach(doc => {
-      const d = doc.data();
-      const opt = document.createElement("option");
-      opt.value = d.namaRuangan;
-      opt.text = d.namaRuangan;
-      sel.appendChild(opt);
+function updateTanggalCetakManual() {
+  const input = document.getElementById("input-tanggal-cetak");
+  const span = document.getElementById("tanggal-cetak");
+  if (input.value) {
+    const tgl = new Date(input.value).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
     });
-  });
-}
-
-function updateDashboardRuangan() {
-  const chosen = document.getElementById("filter-ruangan").value;
-  if (!chosen) {
-    document.getElementById("dashboard-barang-body").innerHTML = "<tr><td colspan='5'>Pilih ruangan untuk melihat data.</td></tr>";
-    return;
+    span.textContent = tgl;
+  } else {
+    span.textContent = "";
   }
-
-  // HAPUS orderBy agar tidak butuh index
-  db.collection("barang").where("ruangan", "==", chosen).get().then(snap => {
-    let rowsHtml = "";
-    let i = 1;
-    snap.forEach(doc => {
-      const d = doc.data();
-      rowsHtml += `<tr>
-        <td>${i++}</td>
-        <td>${d.namaBarang || '-'}</td>
-        <td>${d.merkType || '-'}</td>
-        <td>${d.jumlah || 0}</td>
-        <td>${d.kondisi || '-'}</td>
-      </tr>`;
-    });
-    document.getElementById("dashboard-barang-body").innerHTML = rowsHtml || "<tr><td colspan='5'>Tidak ada barang di ruangan ini.</td></tr>";
-  });
-}
-
-function loadDashboardCountsAndChart() {
-  db.collection("barang").get().then(snap => {
-    let total = 0, B = 0, RR = 0, RB = 0;
-    snap.forEach(doc => {
-      const d = doc.data();
-      const qty = d.jumlah || 0;
-      total += qty;
-      if (d.kondisi === "B") B += qty;
-      else if (d.kondisi === "RR") RR += qty;
-      else if (d.kondisi === "RB") RB += qty;
-    });
-    document.getElementById("total-barang").innerText = total;
-    document.getElementById("total-baik").innerText = B;
-    document.getElementById("total-rr").innerText = RR;
-    document.getElementById("total-rb").innerText = RB;
-  });
 }
 
 function loadLaporan() {
+  const tbody = document.getElementById("laporan-body");
+  tbody.innerHTML = "<tr><td colspan='5'>Memuat...</td></tr>";
+
   db.collection("barang").orderBy("namaBarang").get().then(snap => {
-    let html = ""; let i = 1;
+    let html = "", i = 1;
     snap.forEach(doc => {
       const d = doc.data();
-      html += `<tr>
-        <td>${i++}</td>
-        <td>${d.namaBarang || '-'}</td>
-        <td>${d.merkType || '-'}</td>
-        <td>${d.jumlah || 0}</td>
-        <td>${d.kondisi || '-'}</td>
-      </tr>`;
+      html += `
+        <tr>
+          <td>${i++}</td>
+          <td>${d.namaBarang || '-'}</td>
+          <td>${d.merkType || '-'}</td>
+          <td>${d.jumlah || 0}</td>
+          <td>${d.kondisi || '-'}</td>
+        </tr>`;
     });
-    document.getElementById("laporan-body").innerHTML = html || "<tr><td colspan='5'>Tidak ada data.</td></tr>";
-    document.getElementById("tanggal-cetak").innerText = new Date().toLocaleDateString("id-ID");
+    tbody.innerHTML = html || "<tr><td colspan='5'>Tidak ada data.</td></tr>";
   });
 
+  // ambil identitas sekolah
   db.collection("identitas").doc(IDENTITAS_DOC_ID).get().then(doc => {
     if (!doc.exists) return;
     const d = doc.data();
@@ -440,9 +369,16 @@ function loadLaporan() {
     document.getElementById("lap-alamat-sekolah").innerText = d.alamat || "";
     document.getElementById("lap-bendahara-nama").innerText = d.bendaharaNama || "";
     document.getElementById("lap-bendahara-nip").innerText = d.bendaharaNip || "";
-    document.getElementById("lap-pj-nama").innerText = d.pjNama || "";
-    document.getElementById("lap-pj-nip").innerText = d.pjNip || "";
     if (d.logoUrl) document.getElementById("logo-preview").src = d.logoUrl;
+  });
+
+  // ambil penanggung jawab dari ruangan pertama
+  db.collection("ruangan").limit(1).get().then(snap => {
+    snap.forEach(doc => {
+      const d = doc.data();
+      document.getElementById("lap-pj-nama").innerText = d.penanggungJawab || "";
+      document.getElementById("lap-pj-nip").innerText = d.nipPJ || "";
+    });
   });
 }
 
@@ -451,7 +387,86 @@ function printLaporan() {
 }
 
 // ======================
-// 9) INITIALIZATION
+// 9) DASHBOARD
+// ======================
+let chartRuangan = null;
+
+function loadDashboardCountsAndChart() {
+  db.collection("barang").get().then(snap => {
+    let total = 0, baik = 0, rr = 0, rb = 0;
+    snap.forEach(doc => {
+      total++;
+      const kondisi = (doc.data().kondisi || "").toUpperCase();
+      if (kondisi === "B") baik++;
+      else if (kondisi === "RR") rr++;
+      else if (kondisi === "RB") rb++;
+    });
+
+    document.getElementById("total-barang").textContent = total;
+    document.getElementById("total-baik").textContent = baik;
+    document.getElementById("total-rr").textContent = rr;
+    document.getElementById("total-rb").textContent = rb;
+
+    const ctx = document.getElementById("chartRuangan").getContext("2d");
+    if (chartRuangan) chartRuangan.destroy();
+    chartRuangan = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Baik", "Rusak Ringan", "Rusak Berat"],
+        datasets: [{
+          label: "Jumlah Barang",
+          data: [baik, rr, rb]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+      }
+    });
+  });
+}
+
+function loadFilterRuanganOptions() {
+  const select = document.getElementById("filter-ruangan");
+  select.innerHTML = "";
+  db.collection("ruangan").orderBy("namaRuangan").get().then(snap => {
+    snap.forEach(doc => {
+      const d = doc.data();
+      const opt = document.createElement("option");
+      opt.value = d.namaRuangan;
+      opt.text = d.namaRuangan;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function updateDashboardRuangan() {
+  const selected = document.getElementById("filter-ruangan").value;
+  const body = document.getElementById("dashboard-barang-body");
+  if (!selected) {
+    body.innerHTML = "<tr><td colspan='5'>Silakan pilih ruangan untuk melihat data barang.</td></tr>";
+    return;
+  }
+
+  db.collection("barang").where("ruangan", "==", selected).get().then(snap => {
+    let html = "", i = 1;
+    snap.forEach(doc => {
+      const d = doc.data();
+      html += `
+        <tr>
+          <td>${i++}</td>
+          <td>${d.namaBarang || '-'}</td>
+          <td>${d.merkType || '-'}</td>
+          <td>${d.jumlah || 0}</td>
+          <td>${d.kondisi || '-'}</td>
+        </tr>`;
+    });
+    body.innerHTML = html || "<tr><td colspan='5'>Tidak ada data.</td></tr>";
+  });
+}
+
+// ======================
+// 10) INITIALIZATION
 // ======================
 function initializeAppAfterLogin() {
   loadGedung();
@@ -460,4 +475,5 @@ function initializeAppAfterLogin() {
   loadFilterRuanganOptions();
   loadDashboardCountsAndChart();
   loadIdentitas();
+  loadLaporan();
 }
