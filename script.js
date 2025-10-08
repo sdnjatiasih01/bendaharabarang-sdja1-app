@@ -1,16 +1,16 @@
 // ===============================
 // KONFIGURASI FIREBASE
 // ===============================
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
   authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
   projectId: "inventaris-sekolah-6aa45",
-  storageBucket: "inventaris-sekolah-6aa45.appspot.com",
+  storageBucket: "inventaris-sekolah-6aa45.firebasestorage.app",
   messagingSenderId: "482992763821",
-  appId: "G-C51S4NNKXM"
+  appId: "1:482992763821:web:3476cb5bd7320d840c2724",
+  measurementId: "G-C51S4NNKXM"
 };
-firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
