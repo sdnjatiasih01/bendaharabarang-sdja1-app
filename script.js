@@ -14,7 +14,6 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // ===============================
 // LOGIN DAN REGISTER
@@ -59,7 +58,11 @@ function showView(viewId) {
   if (viewId === "laporan") tampilkanLaporanBarang();
   if (viewId === "identitas") loadIdentitas();
   if (viewId === "gedung") loadGedung();
-  if (viewId === "ruangan") loadRuangan();
+  if (viewId === "ruangan") {
+    loadRuangan();
+    loadGedungSelect(); // perbaikan dropdown gedung
+  }
+  if (viewId === "dashboard") tampilkanBarangDashboard();
 }
 
 // ===============================
@@ -103,14 +106,26 @@ function loadGedung() {
 }
 
 function hapusGedung(id) {
-  if (confirm("Hapus data gedung ini?")) {
-    db.collection("gedung").doc(id).delete();
-  }
+  if (confirm("Hapus data gedung ini?")) db.collection("gedung").doc(id).delete();
 }
 
 // ===============================
-// CRUD RUANGAN (Kompatibel Lama & Baru)
+// CRUD RUANGAN
 // ===============================
+function loadGedungSelect() {
+  db.collection("gedung").onSnapshot(snapshot => {
+    const select = document.getElementById("gedung-select");
+    select.innerHTML = '<option value="">-- Pilih Gedung --</option>';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const opt = document.createElement("option");
+      opt.value = data.nama || data.namaGedung;
+      opt.textContent = data.nama || data.namaGedung;
+      select.appendChild(opt);
+    });
+  });
+}
+
 function saveRuangan(e) {
   e.preventDefault();
   const data = {
@@ -122,6 +137,7 @@ function saveRuangan(e) {
     penanggungJawab: document.getElementById("penanggung-ruangan").value
   };
   db.collection("ruangan").add(data).then(() => e.target.reset());
+  loadRuanganSelects();
 }
 
 function loadRuangan() {
@@ -141,7 +157,10 @@ function loadRuangan() {
         <td>${nama}</td>
         <td>${gedung}</td>
         <td>${penanggung}</td>
-        <td><button onclick="hapusRuangan('${doc.id}')">Hapus</button></td>
+        <td>
+          <button onclick="lihatBarangRuangan('${doc.id}')">Lihat Barang</button>
+          <button onclick="hapusRuangan('${doc.id}')">Hapus</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -149,32 +168,40 @@ function loadRuangan() {
 }
 
 function hapusRuangan(id) {
-  if (confirm("Hapus data ruangan ini?")) {
-    db.collection("ruangan").doc(id).delete();
-  }
-}
-
-function loadRuanganSelects() {
-  db.collection("ruangan").onSnapshot(snap => {
-    const selectBarang = document.getElementById("ruangan-select");
-    const selectFilter = document.getElementById("filter-ruangan");
-    const selectLaporan = document.getElementById("laporan-filter-ruangan");
-
-    [selectBarang, selectFilter, selectLaporan].forEach(sel => {
-      sel.innerHTML = '<option value="">-- Semua Ruangan --</option>';
-      snap.forEach(doc => {
-        const data = doc.data();
-        const opt = document.createElement("option");
-        opt.value = doc.id;
-        opt.textContent = data.nama || data.namaRuangan;
-        sel.appendChild(opt);
-      });
-    });
-  });
+  if (confirm("Hapus data ruangan ini?")) db.collection("ruangan").doc(id).delete();
 }
 
 // ===============================
-// CRUD BARANG (Kompatibel Lama & Baru)
+// LIHAT BARANG DALAM RUANGAN
+// ===============================
+function lihatBarangRuangan(ruanganId) {
+  const tbody = document.getElementById("barang-ruangan-body");
+  tbody.innerHTML = "";
+  let no = 1;
+  db.collection("barang").where("ruangan", "==", ruanganId).onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const nama = d.namaBarang || d.nama || "-";
+      const merk = d.merkBarang || d.merk || "-";
+      const jumlah = d.jumlah || 0;
+      const kondisi = d.kondisi || "-";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${nama}</td>
+        <td>${merk}</td>
+        <td>${jumlah}</td>
+        <td>${kondisi}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+  showView("barang-ruangan");
+}
+
+// ===============================
+// CRUD BARANG
 // ===============================
 function saveBarang(e) {
   e.preventDefault();
@@ -188,38 +215,52 @@ function saveBarang(e) {
   db.collection("barang").add(data).then(() => e.target.reset());
 }
 
-function loadBarang() {
+function loadRuanganSelects() {
+  db.collection("ruangan").onSnapshot(snap => {
+    const selectBarang = document.getElementById("ruangan-select");
+    const selectLaporan = document.getElementById("laporan-filter-ruangan");
+
+    [selectBarang, selectLaporan].forEach(sel => {
+      sel.innerHTML = '<option value="">-- Semua Ruangan --</option>';
+      snap.forEach(doc => {
+        const data = doc.data();
+        const opt = document.createElement("option");
+        opt.value = doc.id;
+        opt.textContent = data.nama || data.namaRuangan;
+        sel.appendChild(opt);
+      });
+    });
+  });
+}
+
+// ===============================
+// DASHBOARD BARANG
+// ===============================
+function tampilkanBarangDashboard() {
+  const tbody = document.getElementById("dashboard-body");
+  tbody.innerHTML = "";
+  let no = 1;
   db.collection("barang").onSnapshot(snapshot => {
-    const tbody = document.getElementById("barang-body");
     tbody.innerHTML = "";
-    let no = 1;
     snapshot.forEach(doc => {
       const d = doc.data();
       const nama = d.namaBarang || d.nama || "-";
       const merk = d.merkBarang || d.merk || "-";
       const jumlah = d.jumlah || 0;
-      const ruangan = d.ruangan || d.namaRuangan || "-";
       const kondisi = d.kondisi || "-";
-
+      const ruangan = d.ruangan || "-";
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
         <td>${nama}</td>
         <td>${merk}</td>
         <td>${jumlah}</td>
-        <td>${ruangan}</td>
         <td>${kondisi}</td>
-        <td><button onclick="hapusBarang('${doc.id}')">Hapus</button></td>
+        <td>${ruangan}</td>
       `;
       tbody.appendChild(tr);
     });
   });
-}
-
-function hapusBarang(id) {
-  if (confirm("Hapus data barang ini?")) {
-    db.collection("barang").doc(id).delete();
-  }
 }
 
 // ===============================
@@ -242,14 +283,6 @@ function loadIdentitas() {
   db.collection("identitas").doc("sekolah").get().then(doc => {
     if (doc.exists) {
       const d = doc.data();
-      document.getElementById("nama-sekolah").value = d.nama || "";
-      document.getElementById("alamat-sekolah").value = d.alamat || "";
-      document.getElementById("logo-sekolah").value = d.logo || "";
-      document.getElementById("bendahara-nama").value = d.bendaharaNama || "";
-      document.getElementById("bendahara-nip").value = d.bendaharaNip || "";
-      document.getElementById("pj-nama").value = d.pjNama || "";
-      document.getElementById("pj-nip").value = d.pjNip || "";
-
       document.getElementById("lap-logo-sekolah").src = d.logo || "";
       document.getElementById("lap-nama-sekolah").textContent = d.nama || "";
       document.getElementById("lap-alamat-sekolah").textContent = d.alamat || "";
@@ -282,7 +315,6 @@ function tampilkanLaporanBarang() {
       const merk = d.merkBarang || d.merk || "-";
       const jumlah = d.jumlah || 0;
       const kondisiData = d.kondisi || "-";
-
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
@@ -309,7 +341,6 @@ function downloadLaporanPDF() {
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jspdf.jsPDF("p", "mm", "a4");
     const imgWidth = 210;
-    const pageHeight = 295;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
     pdf.save("Laporan-Inventaris.pdf");
@@ -317,13 +348,14 @@ function downloadLaporanPDF() {
 }
 
 // ===============================
-// INISIALISASI SETELAH LOGIN
+// INISIALISASI
 // ===============================
 function initDataAfterLogin() {
   loadGedung();
+  loadGedungSelect();
   loadRuangan();
   loadRuanganSelects();
-  loadBarang();
+  tampilkanBarangDashboard();
   loadIdentitas();
   tampilkanLaporanBarang();
 }
