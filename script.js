@@ -1,7 +1,6 @@
 // ===============================
 // KONFIGURASI FIREBASE
 // ===============================
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
   authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
@@ -11,6 +10,8 @@ const firebaseConfig = {
   appId: "1:482992763821:web:3476cb5bd7320d840c2724",
   measurementId: "G-C51S4NNKXM"
 };
+firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
@@ -39,9 +40,9 @@ function loginUser() {
       document.getElementById("login-container").style.display = "none";
       document.getElementById("register-container").style.display = "none";
       document.getElementById("dashboard-container").style.display = "block";
-      loadDashboardData();
       loadIdentitas();
       loadRuanganSelects();
+      tampilkanLaporanBarang();
     })
     .catch(err => document.getElementById("auth-message").innerText = err.message);
 }
@@ -150,7 +151,7 @@ function loadIdentitas() {
 }
 
 // ===============================
-// LAPORAN
+// LAPORAN BARANG
 // ===============================
 function tampilkanLaporanBarang() {
   const ruangan = document.getElementById("laporan-filter-ruangan").value;
