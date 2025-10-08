@@ -57,8 +57,8 @@
       </nav>
 
       <main id="content-area">
-        
-        <!-- Dashboard -->
+
+        <!-- Beranda -->
         <section id="beranda-view" class="view">
           <h2>Dashboard</h2>
           <div class="card-container">
@@ -119,44 +119,21 @@
         <!-- Barang -->
         <section id="barang-view" class="view" style="display:none;">
           <h2>Data Barang</h2>
-
           <form onsubmit="saveBarang(event)">
-            <!-- 1. Ruangan -->
-            <select id="ruangan-select" required>
-              <option value="">-- Pilih Ruangan --</option>
-            </select>
-
-            <!-- 2. Nama Barang -->
+            <select id="ruangan-select" required><option value="">-- Pilih Ruangan --</option></select>
             <input type="text" id="nama-barang" placeholder="Nama Barang" required>
-
-            <!-- 3. Merk/Tipe -->
             <input type="text" id="merk-barang" placeholder="Merk/Tipe">
-
-            <!-- 4. Jumlah -->
             <input type="number" id="jumlah-barang" placeholder="Jumlah" required>
-
-            <!-- 5. Kondisi -->
             <select id="kondisi-barang" required>
               <option value="B">Baik</option>
               <option value="RR">Rusak Ringan</option>
               <option value="RB">Rusak Berat</option>
             </select>
-
-            <!-- Tombol tambah -->
             <button type="submit">Tambah</button>
           </form>
-
           <table class="data-table">
             <thead>
-              <tr>
-                <th>No</th>
-                <th>Nama</th>
-                <th>Merk</th>
-                <th>Jumlah</th>
-                <th>Ruangan</th>
-                <th>Kondisi</th>
-                <th>Aksi</th>
-              </tr>
+              <tr><th>No</th><th>Nama</th><th>Merk</th><th>Jumlah</th><th>Ruangan</th><th>Kondisi</th><th>Aksi</th></tr>
             </thead>
             <tbody id="barang-body"></tbody>
           </table>
@@ -168,7 +145,7 @@
           <form onsubmit="saveIdentitas(event)">
             <input type="text" id="nama-sekolah" placeholder="Nama Sekolah">
             <input type="text" id="alamat-sekolah" placeholder="Alamat Sekolah">
-            <input type="file" id="logo-sekolah">
+            <input type="text" id="logo-sekolah" placeholder="URL Logo Sekolah">
             <input type="text" id="bendahara-nama" placeholder="Nama Bendahara Barang">
             <input type="text" id="bendahara-nip" placeholder="NIP Bendahara Barang">
             <input type="text" id="pj-nama" placeholder="Nama Penanggung Jawab Ruangan">
@@ -181,18 +158,30 @@
         <section id="laporan-view" class="view" style="display:none;">
           <div id="laporan-container">
             <div class="kop-laporan">
-              <img id="logo-preview" src="" alt="Logo Sekolah" height="80">
-              <div>
-                <h3 id="lap-nama-sekolah">Nama Sekolah</h3>
-                <p id="lap-alamat-sekolah">Alamat Sekolah</p>
+              <div style="display:flex; align-items:center; gap:15px;">
+                <img id="logo-preview" src="" alt="Logo Sekolah" height="80">
+                <div>
+                  <h3 id="lap-nama-sekolah">Nama Sekolah</h3>
+                  <p id="lap-alamat-sekolah">Alamat Sekolah</p>
+                </div>
               </div>
             </div>
+            <hr style="margin:10px 0;">
             <h3 class="laporan-header">Laporan Inventaris</h3>
-            <p>Tanggal Cetak: <span id="tanggal-cetak"></span></p>
+
+            <div style="margin:10px 0;">
+              <label><b>Tanggal Cetak:</b></label>
+              <input type="date" id="input-tanggal-cetak" onchange="updateTanggalCetakManual()">
+              <span id="tanggal-cetak" style="margin-left:8px;"></span>
+            </div>
+
             <table class="data-table">
-              <thead><tr><th>No</th><th>Nama Barang</th><th>Merk/Tipe</th><th>Jumlah</th><th>Kondisi</th></tr></thead>
+              <thead>
+                <tr><th>No</th><th>Nama Barang</th><th>Merk/Tipe</th><th>Jumlah</th><th>Kondisi</th></tr>
+              </thead>
               <tbody id="laporan-body"></tbody>
             </table>
+
             <div class="ttd">
               <div>
                 <p>Bendahara Barang</p><br><br>
