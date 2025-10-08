@@ -212,3 +212,86 @@ function downloadLaporanPDF() {
     pdf.save("Laporan-Inventaris.pdf");
   });
 }
+// ===============================
+// TAMPILKAN DATA GEDUNG
+// ===============================
+function loadGedung() {
+  db.collection("gedung").onSnapshot(snapshot => {
+    const tbody = document.getElementById("gedung-body");
+    tbody.innerHTML = "";
+    let no = 1;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${d.nama}</td>
+        <td>${d.luas}</td>
+        <td>${d.tahun}</td>
+        <td>${d.sumber}</td>
+        <td><button onclick="hapusGedung('${doc.id}')">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function hapusGedung(id) {
+  if (confirm("Hapus data gedung ini?")) {
+    db.collection("gedung").doc(id).delete();
+  }
+}
+
+// ===============================
+// TAMPILKAN DATA RUANGAN
+// ===============================
+function loadRuangan() {
+  db.collection("ruangan").onSnapshot(snapshot => {
+    const tbody = document.getElementById("ruangan-body");
+    tbody.innerHTML = "";
+    let no = 1;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${d.nama}</td>
+        <td>${d.gedung || '-'}</td>
+        <td>${d.penanggung || '-'}</td>
+        <td><button onclick="hapusRuangan('${doc.id}')">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function hapusRuangan(id) {
+  if (confirm("Hapus data ruangan ini?")) {
+    db.collection("ruangan").doc(id).delete();
+  }
+}
+
+// ===============================
+// PANGGIL SAAT LOGIN
+// ===============================
+function initDataAfterLogin() {
+  loadGedung();
+  loadRuangan();
+  loadRuanganSelects();
+  loadIdentitas();
+  tampilkanLaporanBarang();
+}
+
+// Revisi fungsi login agar otomatis memanggil initDataAfterLogin()
+function loginUser() {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("register-container").style.display = "none";
+      document.getElementById("dashboard-container").style.display = "block";
+      initDataAfterLogin();
+    })
+    .catch(err => document.getElementById("auth-message").innerText = err.message);
+}
