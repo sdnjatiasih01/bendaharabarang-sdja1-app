@@ -1,10 +1,6 @@
-// ======================
-// script.js — Inventaris SDN Jatiasih I (Versi Lengkap + Filter Ruangan & Logo Laporan)
-// ======================
-
-// ----------------------
-// 1) FIREBASE CONFIG
-// ----------------------
+// ===============================
+// KONFIGURASI FIREBASE
+// ===============================
 const firebaseConfig = {
   apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
   authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
@@ -14,6 +10,7 @@ const firebaseConfig = {
   appId: "G-C51S4NNKXM"
 };
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
