@@ -13,6 +13,10 @@
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Library untuk export PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   
@@ -42,6 +46,7 @@
       <h1>Inventaris SDN JATIASIH I</h1>
       <div>
         <button onclick="printLaporan()">Cetak Laporan</button>
+        <button onclick="downloadLaporanPDF()">Unduh PDF</button>
         <button class="logout-btn" onclick="logoutUser()">Logout</button>
       </div>
     </header>
@@ -148,8 +153,8 @@
             <input type="text" id="logo-sekolah" placeholder="URL Logo Sekolah">
             <input type="text" id="bendahara-nama" placeholder="Nama Bendahara Barang">
             <input type="text" id="bendahara-nip" placeholder="NIP Bendahara Barang">
-            <input type="text" id="pj-nama" placeholder="Nama Penanggung Jawab Ruangan">
-            <input type="text" id="pj-nip" placeholder="NIP Penanggung Jawab Ruangan">
+            <input type="text" id="pj-nama" placeholder="Nama Kepala Sekolah">
+            <input type="text" id="pj-nip" placeholder="NIP Kepala Sekolah">
             <button type="submit">Simpan</button>
           </form>
         </section>
@@ -171,9 +176,17 @@
             <h3 class="laporan-header">Laporan Inventaris</h3>
 
             <div style="margin:10px 0;">
-              <label><b>Filter Berdasarkan Ruangan:</b></label>
+              <label><b>Filter Ruangan:</b></label>
               <select id="laporan-filter-ruangan" onchange="tampilkanLaporanBarang()">
                 <option value="">-- Semua Ruangan --</option>
+              </select>
+
+              <label style="margin-left:20px;"><b>Filter Kondisi:</b></label>
+              <select id="laporan-filter-kondisi" onchange="tampilkanLaporanBarang()">
+                <option value="">-- Semua Kondisi --</option>
+                <option value="B">Baik</option>
+                <option value="RR">Rusak Ringan</option>
+                <option value="RB">Rusak Berat</option>
               </select>
             </div>
 
@@ -190,16 +203,16 @@
               <tbody id="laporan-body"></tbody>
             </table>
 
-            <div class="ttd">
-              <div>
-                <p>Bendahara Barang</p><br><br>
-                <p id="lap-bendahara-nama"></p>
-                <p id="lap-bendahara-nip"></p>
-              </div>
-              <div>
-                <p>Penanggung Jawab</p><br><br>
+            <div class="ttd" style="display:flex; justify-content:space-between; margin-top:40px;">
+              <div style="text-align:center;">
+                <p>Kepala Sekolah</p><br><br><br>
                 <p id="lap-pj-nama"></p>
                 <p id="lap-pj-nip"></p>
+              </div>
+              <div style="text-align:center;">
+                <p>Bendahara Barang</p><br><br><br>
+                <p id="lap-bendahara-nama"></p>
+                <p id="lap-bendahara-nip"></p>
               </div>
             </div>
           </div>
