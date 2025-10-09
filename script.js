@@ -60,9 +60,12 @@ function showView(viewId) {
   if (viewId === "gedung") loadGedung();
   if (viewId === "ruangan") {
     loadRuangan();
-    loadGedungSelect(); // perbaikan dropdown gedung
+    loadGedungSelect();
   }
-  if (viewId === "dashboard") tampilkanBarangDashboard();
+  if (viewId === "dashboard" || viewId === "beranda") {
+    loadRuanganSelects();
+    updateDashboardRuangan();
+  }
 }
 
 // ===============================
@@ -158,7 +161,6 @@ function loadRuangan() {
         <td>${gedung}</td>
         <td>${penanggung}</td>
         <td>
-          <button onclick="lihatBarangRuangan('${doc.id}')">Lihat Barang</button>
           <button onclick="hapusRuangan('${doc.id}')">Hapus</button>
         </td>
       `;
@@ -169,35 +171,6 @@ function loadRuangan() {
 
 function hapusRuangan(id) {
   if (confirm("Hapus data ruangan ini?")) db.collection("ruangan").doc(id).delete();
-}
-
-// ===============================
-// LIHAT BARANG DALAM RUANGAN
-// ===============================
-function lihatBarangRuangan(ruanganId) {
-  const tbody = document.getElementById("barang-ruangan-body");
-  tbody.innerHTML = "";
-  let no = 1;
-  db.collection("barang").where("ruangan", "==", ruanganId).onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const nama = d.namaBarang || d.nama || "-";
-      const merk = d.merkBarang || d.merk || "-";
-      const jumlah = d.jumlah || 0;
-      const kondisi = d.kondisi || "-";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${no++}</td>
-        <td>${nama}</td>
-        <td>${merk}</td>
-        <td>${jumlah}</td>
-        <td>${kondisi}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  });
-  showView("barang-ruangan");
 }
 
 // ===============================
@@ -217,10 +190,13 @@ function saveBarang(e) {
 
 function loadRuanganSelects() {
   db.collection("ruangan").onSnapshot(snap => {
-    const selectBarang = document.getElementById("ruangan-select");
-    const selectLaporan = document.getElementById("laporan-filter-ruangan");
+    const selects = [
+      document.getElementById("ruangan-select"),
+      document.getElementById("laporan-filter-ruangan"),
+      document.getElementById("filter-ruangan")
+    ].filter(Boolean);
 
-    [selectBarang, selectLaporan].forEach(sel => {
+    selects.forEach(sel => {
       sel.innerHTML = '<option value="">-- Semua Ruangan --</option>';
       snap.forEach(doc => {
         const data = doc.data();
@@ -234,21 +210,31 @@ function loadRuanganSelects() {
 }
 
 // ===============================
-// DASHBOARD BARANG
+// DASHBOARD BERANDA: FILTER RUANGAN
 // ===============================
-function tampilkanBarangDashboard() {
-  const tbody = document.getElementById("dashboard-body");
+function updateDashboardRuangan() {
+  const ruanganId = document.getElementById("filter-ruangan").value;
+  const tbody = document.getElementById("dashboard-barang-body");
   tbody.innerHTML = "";
-  let no = 1;
-  db.collection("barang").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
+
+  let query = db.collection("barang");
+  if (ruanganId) query = query.where("ruangan", "==", ruanganId);
+
+  query.get().then(snapshot => {
+    let no = 1;
+    let totalBaik = 0, totalRR = 0, totalRB = 0;
+
     snapshot.forEach(doc => {
       const d = doc.data();
       const nama = d.namaBarang || d.nama || "-";
       const merk = d.merkBarang || d.merk || "-";
       const jumlah = d.jumlah || 0;
       const kondisi = d.kondisi || "-";
-      const ruangan = d.ruangan || "-";
+
+      if (kondisi === "B") totalBaik += jumlah;
+      else if (kondisi === "RR") totalRR += jumlah;
+      else if (kondisi === "RB") totalRB += jumlah;
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${no++}</td>
@@ -256,9 +242,28 @@ function tampilkanBarangDashboard() {
         <td>${merk}</td>
         <td>${jumlah}</td>
         <td>${kondisi}</td>
-        <td>${ruangan}</td>
       `;
       tbody.appendChild(tr);
+    });
+
+    document.getElementById("total-barang").textContent = totalBaik + totalRR + totalRB;
+    document.getElementById("total-baik").textContent = totalBaik;
+    document.getElementById("total-rr").textContent = totalRR;
+    document.getElementById("total-rb").textContent = totalRB;
+
+    if (window.chartRuanganInstance) window.chartRuanganInstance.destroy();
+    const ctx = document.getElementById("chartRuangan").getContext("2d");
+    window.chartRuanganInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Baik", "Rusak Ringan", "Rusak Berat"],
+        datasets: [{
+          label: "Jumlah Barang",
+          data: [totalBaik, totalRR, totalRB],
+          backgroundColor: ["#4CAF50", "#FFC107", "#F44336"]
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
     });
   });
 }
@@ -355,7 +360,7 @@ function initDataAfterLogin() {
   loadGedungSelect();
   loadRuangan();
   loadRuanganSelects();
-  tampilkanBarangDashboard();
+  updateDashboardRuangan();
   loadIdentitas();
   tampilkanLaporanBarang();
 }
