@@ -308,7 +308,7 @@ function loadIdentitas() {
 // ===============================
 // LAPORAN BARANG
 // ===============================
-function tampilkanLaporanBarang() {
+function tampilkanLaporanBarang(); {
   const ruangan = document.getElementById("laporan-filter-ruangan").value;
   const kondisi = document.getElementById("laporan-filter-kondisi").value;
 
