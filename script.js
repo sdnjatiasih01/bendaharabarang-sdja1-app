@@ -160,9 +160,7 @@ function loadRuangan() {
         <td>${nama}</td>
         <td>${gedung}</td>
         <td>${penanggung}</td>
-        <td>
-          <button onclick="hapusRuangan('${doc.id}')">Hapus</button>
-        </td>
+        <td><button onclick="hapusRuangan('${doc.id}')">Hapus</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -174,12 +172,17 @@ function hapusRuangan(id) {
 }
 
 // ===============================
-// CRUD BARANG
+// CRUD BARANG (PAKAI ID RUANGAN)
 // ===============================
 function saveBarang(e) {
   e.preventDefault();
+  const ruanganSelect = document.getElementById("ruangan-select");
+  const ruanganId = ruanganSelect.value;
+  const ruanganNama = ruanganSelect.options[ruanganSelect.selectedIndex].text;
+
   const data = {
-    ruangan: document.getElementById("ruangan-select").value,
+    ruangan: ruanganId, // simpan ID ruangan
+    namaRuangan: ruanganNama,
     namaBarang: document.getElementById("nama-barang").value,
     merkBarang: document.getElementById("merk-barang").value,
     jumlah: parseInt(document.getElementById("jumlah-barang").value),
@@ -188,6 +191,9 @@ function saveBarang(e) {
   db.collection("barang").add(data).then(() => e.target.reset());
 }
 
+// ===============================
+// LOAD DROPDOWN RUANGAN
+// ===============================
 function loadRuanganSelects() {
   db.collection("ruangan").onSnapshot(snap => {
     const selects = [
@@ -210,7 +216,7 @@ function loadRuanganSelects() {
 }
 
 // ===============================
-// DASHBOARD BERANDA: FILTER RUANGAN
+// BERANDA / DASHBOARD RUANGAN
 // ===============================
 function updateDashboardRuangan() {
   const ruanganId = document.getElementById("filter-ruangan").value;
@@ -317,50 +323,4 @@ function tampilkanLaporanBarang() {
     snapshot.forEach(doc => {
       const d = doc.data();
       const nama = d.namaBarang || d.nama || "-";
-      const merk = d.merkBarang || d.merk || "-";
-      const jumlah = d.jumlah || 0;
-      const kondisiData = d.kondisi || "-";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${no++}</td>
-        <td>${nama}</td>
-        <td>${merk}</td>
-        <td>${jumlah}</td>
-        <td>${kondisiData}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  });
-}
-
-// ===============================
-// CETAK & UNDUH PDF
-// ===============================
-function printLaporan() {
-  window.print();
-}
-
-function downloadLaporanPDF() {
-  const laporanEl = document.getElementById("laporan-container");
-  html2canvas(laporanEl, { scale: 2 }).then(canvas => {
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jspdf.jsPDF("p", "mm", "a4");
-    const imgWidth = 210;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-    pdf.save("Laporan-Inventaris.pdf");
-  });
-}
-
-// ===============================
-// INISIALISASI
-// ===============================
-function initDataAfterLogin() {
-  loadGedung();
-  loadGedungSelect();
-  loadRuangan();
-  loadRuanganSelects();
-  updateDashboardRuangan();
-  loadIdentitas();
-  tampilkanLaporanBarang();
-}
+      const merk = d.m
