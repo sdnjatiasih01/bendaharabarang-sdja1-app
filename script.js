@@ -181,14 +181,17 @@ function saveBarang(e) {
   const ruanganNama = ruanganSelect.options[ruanganSelect.selectedIndex].text;
 
   const data = {
-    ruangan: ruanganId, // simpan ID ruangan
+    ruangan: ruanganId,
     namaRuangan: ruanganNama,
     namaBarang: document.getElementById("nama-barang").value,
     merkBarang: document.getElementById("merk-barang").value,
     jumlah: parseInt(document.getElementById("jumlah-barang").value),
     kondisi: document.getElementById("kondisi-barang").value
   };
-  db.collection("barang").add(data).then(() => e.target.reset());
+  db.collection("barang").add(data).then(() => {
+    e.target.reset();
+    loadBarangByRuangan(); // refresh tabel setelah tambah
+  });
 }
 
 // ===============================
@@ -213,6 +216,48 @@ function loadRuanganSelects() {
       });
     });
   });
+}
+
+// ===============================
+// TAMPILKAN DATA BARANG BERDASARKAN RUANGAN
+// ===============================
+function loadBarangByRuangan() {
+  const ruanganId = document.getElementById("ruangan-select").value;
+  const tbody = document.getElementById("barang-body");
+  tbody.innerHTML = "";
+
+  let query = db.collection("barang");
+  if (ruanganId) query = query.where("ruangan", "==", ruanganId);
+
+  query.get().then(snapshot => {
+    let no = 1;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const nama = d.namaBarang || "-";
+      const merk = d.merkBarang || "-";
+      const jumlah = d.jumlah || 0;
+      const ruanganNama = d.namaRuangan || "-";
+      const kondisi = d.kondisi || "-";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${nama}</td>
+        <td>${merk}</td>
+        <td>${jumlah}</td>
+        <td>${ruanganNama}</td>
+        <td>${kondisi}</td>
+        <td><button onclick="hapusBarang('${doc.id}')">Hapus</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function hapusBarang(id) {
+  if (confirm("Hapus data barang ini?")) {
+    db.collection("barang").doc(id).delete().then(() => loadBarangByRuangan());
+  }
 }
 
 // ===============================
@@ -308,7 +353,7 @@ function loadIdentitas() {
 // ===============================
 // LAPORAN BARANG
 // ===============================
-function tampilkanLaporanBarang(); {
+function tampilkanLaporanBarang() {
   const ruangan = document.getElementById("laporan-filter-ruangan").value;
   const kondisi = document.getElementById("laporan-filter-kondisi").value;
 
@@ -367,4 +412,20 @@ function initDataAfterLogin() {
   updateDashboardRuangan();
   loadIdentitas();
   tampilkanLaporanBarang();
+  loadBarangByRuangan();
 }
+
+// ===============================
+// EVENT LISTENER
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  const ruanganSelect = document.getElementById("ruangan-select");
+  if (ruanganSelect) {
+    ruanganSelect.addEventListener("change", loadBarangByRuangan);
+  }
+
+  const filterRuangan = document.getElementById("filter-ruangan");
+  if (filterRuangan) {
+    filterRuangan.addEventListener("change", updateDashboardRuangan);
+  }
+});
