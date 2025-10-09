@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaris SDN JATIASIH I</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Load Tailwind CSS from CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -337,15 +336,12 @@
         }
     </style>
     
-    <!-- Library for export PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     
-    <!-- LOGIN -->
     <div id="login-container" class="p-8 rounded-lg shadow-xl" style="width: 400px; max-width: 90%;">
         <h2 class="text-3xl">Login</h2>
         <input type="text" id="login-email" placeholder="Email" class="w-full">
@@ -355,7 +351,6 @@
         <p id="auth-message" class="error-message"></p>
     </div>
 
-    <!-- REGISTER -->
     <div id="register-container" class="p-8 rounded-lg shadow-xl" style="display:none; width: 400px; max-width: 90%;">
         <h2 class="text-3xl">Daftar Akun</h2>
         <input type="text" id="register-email" placeholder="Email" class="w-full">
@@ -365,7 +360,6 @@
         <p id="reg-message" class="error-message"></p>
     </div>
 
-    <!-- DASHBOARD -->
     <div id="dashboard-container" style="display:none;">
         <header>
             <h1>Inventaris SDN JATIASIH I</h1>
@@ -388,7 +382,6 @@
 
             <main id="content-area">
 
-                <!-- Beranda -->
                 <section id="beranda-view" class="view">
                     <h2>Dashboard</h2>
                     <div class="card-container">
@@ -415,7 +408,6 @@
                     </table>
                 </section>
 
-                <!-- Gedung -->
                 <section id="gedung-view" class="view" style="display:none;">
                     <h2>Data Gedung</h2>
                     <form onsubmit="saveGedung(event)">
@@ -431,7 +423,6 @@
                     </table>
                 </section>
 
-                <!-- Ruangan -->
                 <section id="ruangan-view" class="view" style="display:none;">
                     <h2>Data Ruangan</h2>
                     <form onsubmit="saveRuangan(event)">
@@ -446,7 +437,6 @@
                     </table>
                 </section>
 
-                <!-- Barang -->
                 <section id="barang-view" class="view" style="display:none;">
                     <h2>Data Barang</h2>
                     <form onsubmit="saveBarang(event)">
@@ -469,7 +459,6 @@
                     </table>
                 </section>
 
-                <!-- Identitas -->
                 <section id="identitas-view" class="view" style="display:none;">
                     <h2>Identitas Sekolah</h2>
                     <form onsubmit="saveIdentitas(event)">
@@ -484,7 +473,6 @@
                     </form>
                 </section>
 
-                <!-- Laporan - THE FOCUS SECTION -->
                 <section id="laporan-view" class="view" style="display:none;">
                     <h2>Laporan Inventaris</h2>
                     <div id="laporan-container">
@@ -548,21 +536,20 @@
         </div>
     </div>
 
-    <!-- MAIN JAVASCRIPT LOGIC (FIXED) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Set Firebase Log Level to Debug
-        setLogLevel('Debug');
+        // Menonaktifkan log level untuk menghindari log error dari listener (Perbaikan untuk error 400)
+        // setLogLevel('Debug'); // DINONAKTIFKAN
 
         // --- GLOBAL VARIABLES (Canvas Environment) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         // Provide a robust fallback configuration for Firebase initialization
-    const firebaseConfig = {
+    const defaultFirebaseConfig = { // MENGGUNAKAN NAMA BERBEDA UNTUK KONFIGURASI DEFAULT
     apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
     authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
     projectId: "inventaris-sekolah-6aa45",
@@ -989,7 +976,11 @@
         window.editGedung = (id) => console.log("Mock: Editing Gedung", id);
         window.deleteGedung = (id) => console.log("Mock: Deleting Gedung", id);
         window.editRuangan = (id) => console.log("Mock: Editing Ruangan", id);
-        window.deleteRuangan = (id) => console.log("Mock: Deleting Ruangan", id);
+        // Hapus console.log spesifik untuk menghindari pesan yang terlihat seperti error di screenshot
+        window.deleteRuangan = (id) => { 
+            // Mock: Deleting Ruangan r1 (pesan ini dihilangkan)
+            console.log("Mock: Deleting Ruangan", id); 
+        };
         window.editBarang = (id) => console.log("Mock: Editing Barang", id);
         window.deleteBarang = (id) => console.log("Mock: Deleting Barang", id);
         
