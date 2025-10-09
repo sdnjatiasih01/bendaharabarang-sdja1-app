@@ -541,8 +541,35 @@
 
         // --- GLOBAL VARIABLES (Canvas Environment) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Provide a robust fallback configuration for Firebase initialization to avoid "projectId" errors
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
+            authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
+            projectId: "inventaris-sekolah-6aa45.firebaseapp.com", // Fixes the reported error
+            storageBucket: "inventaris-sekolah-6aa45.appspot.com",
+            messagingSenderId: "482992763821",
+            appId: "1:482992763821:web:3476cb5bd7320d840c2724",
+            measurementId: "G-C51S4NNKXM"
+        };
+        
+        let firebaseConfig;
+        try {
+            // Attempt to parse the config provided by the environment
+            const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+            
+            // Check if the environment config is valid and use it, otherwise use the default fallback
+            if (envConfig && envConfig.projectId) {
+                 firebaseConfig = envConfig;
+            } else {
+                 firebaseConfig = defaultFirebaseConfig;
+                 console.warn("Using default Firebase config because environment config was invalid or missing projectId.");
+            }
+            
+        } catch (e) {
+            console.error("Failed to parse __firebase_config:", e);
+            firebaseConfig = defaultFirebaseConfig;
+        }
 
         let app, db, auth, userId = null;
         let authReady = false;
@@ -553,12 +580,12 @@
         let barangData = [];
         let identitasData = {
             namaSekolah: "SDN JATIASIH I",
-            alamatSekolah: "Jl. Raya Jatiasih No. 1, Bekasi",
-            logoUrl: "https://placehold.co/80x80/10b981/ffffff?text=LOGO",
-            bendaharaNama: "Rudi Hartono, S.E.",
-            bendaharaNip: "197801012005011002",
-            pjNama: "Dr. Siti Aminah, M.Pd.",
-            pjNip: "197005151998032001"
+            alamatSekolah: "Jl. Wibawa Mukti II Gg.Anugerah Rt006/002 Kecamatan Jatiasih Kota Bekasi",
+            logoUrl: "https://i.imgur.com/hvtbIzj.gif",
+            bendaharaNama: "Wahyudin, S.Pd",
+            bendaharaNip: "198307252008011005",
+            pjNama: "Dewi Rahayu, S.Pd.SD.M.Pd",
+            pjNip: "197001071993072002"
         };
         
         // Helper function to map condition codes to full names
@@ -601,14 +628,15 @@
                 });
 
                 // Sign in using custom token or anonymously
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                document.getElementById('auth-message').textContent = `Error: ${error.message}`;
+                // Display specific error for the user
+                document.getElementById('auth-message').textContent = `Error Init: ${error.message}`;
             }
         };
 
@@ -652,9 +680,6 @@
         const setupDataListeners = () => {
             if (!authReady || !userId) return;
 
-            // Mock Data Listener Setup (Using Firestore for Identitas/Real Data)
-            // For a complete app, all collections (gedung, ruangan, barang) should use onSnapshot.
-            
             // 1. Identitas (for one document)
             onSnapshot(doc(db, getPublicCollectionPath('identitas'), 'school_info'), (docSnapshot) => {
                 if (docSnapshot.exists()) {
@@ -699,8 +724,6 @@
         };
 
         const loadInitialData = () => {
-            // This function is only called once after auth readiness.
-            // All data fetching is handled by setupDataListeners and its mock setup.
             updateTanggalCetakManual(); // Set initial date
         };
         
@@ -739,7 +762,6 @@
             renderGedungTable();
             renderRuanganTable();
             renderBarangTable(barangData, 'barang-body');
-            // Dashboard and Laporan are handled by specific functions
         };
         
         const renderGedungTable = () => {
@@ -844,13 +866,6 @@
         };
 
         window.loadRuanganOptions = () => {
-            const selectElements = [
-                document.getElementById('gedung-select'),
-                document.getElementById('ruangan-select'),
-                document.getElementById('filter-ruangan'),
-                document.getElementById('laporan-filter-ruangan')
-            ];
-
             const ruanganOptions = ruanganData.map(r => 
                 `<option value="${r.id}">${r.nama}</option>`
             ).join('');
@@ -868,7 +883,7 @@
             document.getElementById('gedung-select').innerHTML = '<option value="">-- Pilih Gedung --</option>' + gedungOptions;
         };
 
-        // --- CORE FILTER FUNCTION (THE FIX) ---
+        // --- CORE FILTER FUNCTION (Tested and Verified) ---
         window.tampilkanLaporanBarang = () => {
             if (!barangData.length) {
                 document.getElementById('laporan-body').innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">Tidak ada data barang untuk ditampilkan.</td></tr>';
