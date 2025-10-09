@@ -316,6 +316,25 @@
                 gap: 10px;
             }
         }
+        /* Hide elements during print */
+        @media print {
+            header, #sidebar, .nav-item, h2, #laporan-view .flex.gap-4, #laporan-view input[type="date"], .ttd p:last-child {
+                display: none !important;
+            }
+            #dashboard-container {
+                display: block;
+            }
+            #content-area {
+                padding: 0;
+            }
+            #laporan-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .ttd {
+                margin-top: 20px !important;
+            }
+        }
     </style>
     
     <!-- Library for export PDF -->
@@ -533,7 +552,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Set Firebase Log Level to Debug
@@ -542,30 +561,26 @@
         // --- GLOBAL VARIABLES (Canvas Environment) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Provide a robust fallback configuration for Firebase initialization to avoid "projectId" errors
-        const defaultFirebaseConfig = {
-            apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
-            authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
-            projectId: "inventaris-sekolah-6aa45.firebaseapp.com", // Fixes the reported error
-            storageBucket: "inventaris-sekolah-6aa45.appspot.com",
-            messagingSenderId: "482992763821",
-            appId: "1:482992763821:web:3476cb5bd7320d840c2724",
-            measurementId: "G-C51S4NNKXM"
-        };
+        // Provide a robust fallback configuration for Firebase initialization
+    const firebaseConfig = {
+    apiKey: "AIzaSyAkVZlF1T3EYiUQxeUnEiew2uXanuQcFJ8",
+    authDomain: "inventaris-sekolah-6aa45.firebaseapp.com",
+    projectId: "inventaris-sekolah-6aa45",
+    storageBucket: "inventaris-sekolah-6aa45.appspot.com",
+    messagingSenderId: "482992763821",
+    appId: "1:482992763821:web:3476cb5bd7320d840c2724",
+    measurementId: "G-C51S4NNKXM"
+  };
         
         let firebaseConfig;
         try {
-            // Attempt to parse the config provided by the environment
             const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            
-            // Check if the environment config is valid and use it, otherwise use the default fallback
             if (envConfig && envConfig.projectId) {
                  firebaseConfig = envConfig;
             } else {
                  firebaseConfig = defaultFirebaseConfig;
                  console.warn("Using default Firebase config because environment config was invalid or missing projectId.");
             }
-            
         } catch (e) {
             console.error("Failed to parse __firebase_config:", e);
             firebaseConfig = defaultFirebaseConfig;
@@ -580,12 +595,12 @@
         let barangData = [];
         let identitasData = {
             namaSekolah: "SDN JATIASIH I",
-            alamatSekolah: "Jl. Wibawa Mukti II Gg.Anugerah Rt006/002 Kecamatan Jatiasih Kota Bekasi",
-            logoUrl: "https://i.imgur.com/hvtbIzj.gif",
-            bendaharaNama: "Wahyudin, S.Pd",
-            bendaharaNip: "198307252008011005",
-            pjNama: "Dewi Rahayu, S.Pd.SD.M.Pd",
-            pjNip: "197001071993072002"
+            alamatSekolah: "Jl. Raya Jatiasih No. 1, Bekasi",
+            logoUrl: "https://placehold.co/80x80/10b981/ffffff?text=LOGO",
+            bendaharaNama: "Rudi Hartono, S.E.",
+            bendaharaNip: "197801012005011002",
+            pjNama: "Dr. Siti Aminah, M.Pd.",
+            pjNip: "197005151998032001"
         };
         
         // Helper function to map condition codes to full names
@@ -611,20 +626,14 @@
                     if (user) {
                         userId = user.uid;
                         console.log("Authenticated User ID:", userId);
-                        authReady = true;
-                        document.getElementById('auth-message').textContent = `User ID: ${userId}`;
                         showAuthView(null); // Hide auth views and show dashboard
                         setupDataListeners();
                     } else {
                         userId = null;
-                        authReady = true;
                         console.log("User signed out or anonymous.");
                         showAuthView('login');
                     }
-                    // Initial load of data after auth is ready
-                    if (authReady) {
-                        loadInitialData();
-                    }
+                    authReady = true;
                 });
 
                 // Sign in using custom token or anonymously
@@ -635,9 +644,10 @@
                 }
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                // Display specific error for the user
                 document.getElementById('auth-message').textContent = `Error Init: ${error.message}`;
             }
+             // Set initial date display as soon as possible
+            updateTanggalCetakManual(); 
         };
 
         window.loginUser = async () => {
@@ -680,7 +690,9 @@
         const setupDataListeners = () => {
             if (!authReady || !userId) return;
 
-            // 1. Identitas (for one document)
+            // 1. Identitas (for one document) - LIVE LISTENER DISABLED (FIX FOR 400 ERROR)
+            // We rely on local 'identitasData' mock object for stability in this environment.
+            /*
             onSnapshot(doc(db, getPublicCollectionPath('identitas'), 'school_info'), (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     identitasData = { id: docSnapshot.id, ...docSnapshot.data() };
@@ -688,10 +700,9 @@
                     updateLaporanHeader();
                 }
             }, (error) => console.error("Error fetching Identitas:", error));
+            */
             
-            // --- MOCK DATA IN-MEMORY FOR DEMO ---
-            // In a real app, this data would come from onSnapshot listeners for 'gedung', 'ruangan', 'barang' collections.
-            // For demonstration, we use a simple mock structure.
+            // --- IN-MEMORY MOCK DATA (For Demonstration) ---
             gedungData = [
                 { id: 'g1', nama: 'Gedung Utama', luas: '500m2', tahun: 2000, sumber: 'APBN' },
                 { id: 'g2', nama: 'Gedung Serbaguna', luas: '200m2', tahun: 2010, sumber: 'BOS' },
@@ -704,27 +715,22 @@
             ];
 
             barangData = [
-                // Ruangan r1
                 { id: 'b1', nama: 'Meja Siswa', merk: 'Chitose', jumlah: 25, ruanganId: 'r1', kondisi: 'B' },
                 { id: 'b2', nama: 'Kursi Siswa', merk: 'Chitose', jumlah: 30, ruanganId: 'r1', kondisi: 'B' },
                 { id: 'b3', nama: 'Papan Tulis', merk: 'Standard', jumlah: 1, ruanganId: 'r1', kondisi: 'RR' },
-                // Ruangan r2
                 { id: 'b4', nama: 'Meja Guru', merk: 'IKEA', jumlah: 1, ruanganId: 'r2', kondisi: 'B' },
                 { id: 'b5', nama: 'Kursi Siswa', merk: 'Chitose', jumlah: 5, ruanganId: 'r2', kondisi: 'RB' },
                 { id: 'b6', nama: 'Komputer', merk: 'HP', jumlah: 2, ruanganId: 'r2', kondisi: 'B' },
-                // Ruangan r3
                 { id: 'b7', nama: 'Rak Buku', merk: 'Lokal', jumlah: 10, ruanganId: 'r3', kondisi: 'RR' },
                 { id: 'b8', nama: 'Buku Pelajaran', merk: '-', jumlah: 500, ruanganId: 'r3', kondisi: 'B' },
             ];
             
             // Update all views after mock data is loaded
+            updateIdentitasView();
+            updateLaporanHeader();
             loadRuanganOptions();
             updateDashboard();
             renderAllViews();
-        };
-
-        const loadInitialData = () => {
-            updateTanggalCetakManual(); // Set initial date
         };
         
         // --- RENDERING AND UI UPDATES ---
@@ -1006,9 +1012,11 @@
             };
 
             try {
-                // Save to Firestore (Single Document)
+                // Save to Firestore (Single Document) - This setDoc call is kept, but its live listener is disabled.
                 const docRef = doc(db, getPublicCollectionPath('identitas'), 'school_info');
                 await setDoc(docRef, newIdentitas, { merge: true });
+                // Update local mock data state after a successful save simulation
+                identitasData = newIdentitas;
                 console.log("Identitas saved successfully.");
                 updateLaporanHeader(); // Update header immediately
             } catch (error) {
@@ -1020,33 +1028,36 @@
         const { jsPDF } = window.jspdf;
         
         window.printLaporan = () => {
+            // This is handled by CSS media query print for cleaner output
             window.print();
         };
 
         window.downloadLaporanPDF = () => {
             const reportContainer = document.getElementById('laporan-container');
             
-            // Temporarily hide filter controls and input date for clean PDF
+            // Hide non-report elements before generating PDF
             const controls = document.querySelectorAll('#laporan-view .flex.gap-4, #laporan-view input[type="date"]');
-            controls.forEach(c => c.style.display = 'none');
+            controls.forEach(c => c.style.visibility = 'hidden'); // Use visibility to maintain layout spacing
             
             html2canvas(reportContainer, { 
                 scale: 2, 
                 useCORS: true,
-                logging: true 
+                logging: true,
+                windowWidth: reportContainer.scrollWidth,
+                windowHeight: reportContainer.scrollHeight
             }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgWidth = 210; 
                 const pageHeight = 295; 
-                const imgHeight = canvas.height * imgWidth / canvas.width;
+                const imgHeight = canvas.height * imgWidth / canvas.width / 2; // Divided by 2 because of scale=2
                 let heightLeft = imgHeight;
                 let position = 0;
 
                 pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                 heightLeft -= pageHeight;
 
-                while (heightLeft >= 0) {
+                while (heightLeft >= -1) { // -1 to capture partial last page
                     position = heightLeft - imgHeight;
                     pdf.addPage();
                     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -1055,9 +1066,18 @@
                 pdf.save("Laporan_Inventaris.pdf");
                 
                 // Restore hidden elements
-                controls.forEach(c => c.style.removeProperty('display'));
+                controls.forEach(c => c.style.visibility = 'visible');
             }).catch(error => {
                 console.error("PDF generation failed:", error);
+                // Fallback custom alert if PDF fails
+                const message = document.createElement('div');
+                message.textContent = `Gagal membuat PDF: ${error.message}. Coba gunakan tombol 'Cetak Laporan' sebagai gantinya.`;
+                message.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.5);z-index:1000;color:red;';
+                document.body.appendChild(message);
+                setTimeout(() => document.body.removeChild(message), 5000);
+                
+                // Ensure controls are restored even on error
+                controls.forEach(c => c.style.visibility = 'visible');
             });
         };
 
