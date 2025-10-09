@@ -323,4 +323,48 @@ function tampilkanLaporanBarang() {
     snapshot.forEach(doc => {
       const d = doc.data();
       const nama = d.namaBarang || d.nama || "-";
-      const merk = d.m
+      const merk = d.merkBarang || d.merk || "-";
+      const jumlah = d.jumlah || 0;
+      const kondisiData = d.kondisi || "-";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${no++}</td>
+        <td>${nama}</td>
+        <td>${merk}</td>
+        <td>${jumlah}</td>
+        <td>${kondisiData}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+// ===============================
+// CETAK & UNDUH PDF
+// ===============================
+function printLaporan() { window.print(); }
+
+function downloadLaporanPDF() {
+  const laporanEl = document.getElementById("laporan-container");
+  html2canvas(laporanEl, { scale: 2 }).then(canvas => {
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF("p", "mm", "a4");
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save("Laporan-Inventaris.pdf");
+  });
+}
+
+// ===============================
+// INISIALISASI
+// ===============================
+function initDataAfterLogin() {
+  loadGedung();
+  loadGedungSelect();
+  loadRuangan();
+  loadRuanganSelects();
+  updateDashboardRuangan();
+  loadIdentitas();
+  tampilkanLaporanBarang();
+}
